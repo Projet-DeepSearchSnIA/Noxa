@@ -1,0 +1,52 @@
+# Ignorer les fichiers python compilés
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+# Ignorer les dossiers de dépendances
+venv/
+env/
+.venv/
+# Ignorer les fichiers de logs
+*.log
+logs/
+# Ignorer les fichiers de base de données SQLite
+*.sqlite3
+db.sqlite3
+# Ignorer les fichiers de cache
+*.cache
+.cache/
+# Ignorer les fichiers de configuration IDE
+.vscode/
+.idea/
+# Ignorer les fichiers temporaires
+*.tmp
+*.swp
+*~
+# Ignorer les fichiers statiques collecté
+staticfiles/
+
+# Ignorer les fichiers médias téléchargés
+media/
+
+# Ignorer les fichiers d'environnement avec clés API
+.env
+.env.local
+.env.production
+
+# Ignorer les fichiers temporaires ou générés
+*.tmp
+*.swp
+*~
+temp/
+llm_context.txt
+llama_prompt.txt
+
+# Données RAG
+*.pdf
+*.txt
+*.json
+*.pkl
+*.npy
+*.faiss
+*.db

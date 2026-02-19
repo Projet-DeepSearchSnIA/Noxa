@@ -1,0 +1,26 @@
+{% extends "search_template.html" %}
+
+{% load static %}
+
+{% block searchcontent %}
+
+{% if search_results %}
+<div class="search-section">
+    <h3 class="search-section__title">Tags</h3>
+    <div class="search-section__content">
+        {% for tag in search_results %}
+        <div class="search-item tag-item">
+            <div class="tag-item__name">
+                <a href="" class="tag-link">{{ tag.name }}</a>
+            </div>
+            <div class="tag-item__meta">
+                <span class="meta-item">{{ tag.publications.count }} publications</span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+
+{% endblock searchcontent %}

@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="fr">
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+
+        {% block title %}
+
+        {% endblock title%}
+
+    </title>
+    <!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/> -->
+    <!-- <link rel="stylesheet" href="{% static 'css/main.css' %}" /> -->
+    <!-- <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script> Font Awesome Icons -->
+    <script src="https://unpkg.com/easymde/dist/easymde.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/easymde/dist/easymde.min.css">
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <link rel="stylesheet" href="{% static 'css/boilerplate.css' %}"/>
+    <link rel="stylesheet" href="{% static 'css/content.css' %}"/>
+    <link rel="stylesheet" href="{% static 'css/navbar.css' %}"/>
+    <link rel="stylesheet" href="{% static 'css/colors.css' %}"/>
+    <link rel="stylesheet" href="{% static 'css/footer.css' %}"/>
+    <link rel="stylesheet" href="{% static 'css/messages.css' %}"/>
+    <link rel="stylesheet" href="{% static 'css/home.css' %}"/>
+    <link rel="stylesheet" href="{% static 'css/search.css' %}"/>
+    <link rel="stylesheet" href="{% static 'css/publication.css' %}"/>
+    <link rel="stylesheet" href="{% static 'css/publication_form.css' %}"/>
+    <link rel="stylesheet" href="{% static 'css/profile.css' %}"/>
+    <link rel="stylesheet" href="{% static 'css/collection.css' %}"/>
+    <link rel="stylesheet" href="{% static 'css/edit_profile.css' %}"/>
+    <link rel="stylesheet" href="{% static 'css/notifications.css' %}"/>
+    <link rel="stylesheet" href="{% static 'css/discussion.css' %}"/>
+    <link rel="stylesheet" href="{% static 'css/followers.css' %}"/>
+    <link rel="stylesheet" href="{% static 'css/tag.css' %}"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet"/> <!-- Google Inter Font -->
+    {% block extra_css %}
+    {% endblock extra_css %}
+</head>
+<body style="margin: 0;">
+
+{% include "navbar.html" %}
+
+ <!-- Affichage des messages d'erreur -->
+
+{% if messages %}
+<div class="toast-messages">
+    {% for message in messages %}
+    <div class="toast-message" data-timeout="3000">
+        <span>{{ message }}</span>
+        <button type="button" class="close-btn" aria-label="Close">&times;</button>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<div class="content">
+
+    {% block content %}
+
+    {% endblock content %}
+
+</div>
+
+{% include "footer.html" %}
+
+<!-- Floating Chat Button -->
+{% if user.is_authenticated and request.resolver_match.url_name == 'home' and request.resolver_match.app_name != 'chat' %}
+<a href="{% url 'chat:home' %}" class="floating-chat-btn" title="Discuter avec NOXA">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+    </svg>
+    <span class="chat-btn-tooltip">Assistant NOXA</span>
+</a>
+<style>
+.floating-chat-btn {
+    position: fixed;
+    bottom: 24px;
+    right: 10%;
+    width: 56px;
+    height: 56px;
+    background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    text-decoration: none;
+    box-shadow: 0 4px 20px rgba(30, 58, 95, 0.4);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1000;
+}
+
+.floating-chat-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 28px rgba(30, 58, 95, 0.5);
+}
+
+.floating-chat-btn:active {
+    transform: scale(0.95);
+}
+
+.floating-chat-btn svg {
+    transition: transform 0.3s ease;
+}
+
+.floating-chat-btn:hover svg {
+    transform: rotate(-10deg);
+}
+
+.chat-btn-tooltip {
+    position: absolute;
+    right: 70px;
+    background: #1e3a5f;
+    color: white;
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.2s ease;
+    pointer-events: none;
+}
+
+.chat-btn-tooltip::after {
+    content: '';
+    position: absolute;
+    right: -6px;
+    top: 50%;
+    transform: translateY(-50%);
+    border-width: 6px;
+    border-style: solid;
+    border-color: transparent transparent transparent #1e3a5f;
+}
+
+.floating-chat-btn:hover .chat-btn-tooltip {
+    opacity: 1;
+    visibility: visible;
+    right: 66px;
+}
+
+/* Pulse animation */
+.floating-chat-btn::before {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%);
+    animation: pulse-ring 2s ease-out infinite;
+    z-index: -1;
+}
+
+@keyframes pulse-ring {
+    0% {
+        transform: scale(1);
+        opacity: 0.5;
+    }
+    100% {
+        transform: scale(1.5);
+        opacity: 0;
+    }
+}
+
+@media (max-width: 768px) {
+    .floating-chat-btn {
+        bottom: 16px;
+        right: 16px;
+        width: 50px;
+        height: 50px;
+    }
+
+    .chat-btn-tooltip {
+        display: none;
+    }
+}
+</style>
+{% endif %}
+
+{% block js %}
+
+{% endblock js%}
+
+{% block extra_js %}
+{% endblock extra_js %}
+
+<script src="{% static 'js/script.js' %}"></script>
+
+<script>
+    $('.profile__container--favs__item--collections__collection .delete').on('click', function(e) {
+        const collectionId = $(this).attr('for');
+        
+        if (confirm('Are you sure you want to delete this collection ?')) {
+            window.location.href = `/delete-collection/${collectionId}/`;
+        }
+    });
+
+    $('.collection-item__delete').on('click', function(e) {
+        const collectionId = $(this).attr('for');
+        
+        if (confirm('Are you sure you want to delete this collection ?')) {
+            window.location.href = `/delete-collection/${collectionId}/`;
+        }
+    });
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+    const searchInput = document.querySelector('.header__search--form__input');
+    const searchDropdown = document.getElementById('search-dropdown');
+    const form = document.querySelector('.header__search--form');
+
+    if (searchInput && searchDropdown && form) {
+        // Show the dropdown when the input is focused
+        searchInput.addEventListener('focus', () => {
+            searchDropdown.style.display = 'block';
+        });
+
+        // Hide the dropdown when a click occurs outside the search form
+        document.addEventListener('click', (event) => {
+            const isClickInsideForm = form.contains(event.target);
+            if (!isClickInsideForm) {
+                searchDropdown.style.display = 'none';
+            }
+        });
+
+        // Optional: Prevent the form from submitting when clicking inside the dropdown
+        searchDropdown.addEventListener('click', (event) => {
+            event.stopPropagation();
+        });
+    }
+});
+</script>
+
+<!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script> -->
+</body>
+</html>

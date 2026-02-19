@@ -1,0 +1,144 @@
+<!--
+=== USER PROFILE EDIT PAGE TEMPLATE ===
+Description: Form for authenticated users to modify their personal profile information
+
+Expected Context Data from View:
+- user: User object with current profile data (.username, .email, .photo, .school, .bio, .linkedin, .github)
+
+Template Features:
+1. PROFILE PICTURE UPLOAD:
+  - Click-to-upload image interface with live preview
+  - File input accepts image formats only
+  - JavaScript preview function shows selected image before upload
+
+2. FORM FIELDS:
+  - Username: Display only (disabled field)
+  - Email: Required field with email validation
+  - Password: Optional password change with confirmation
+  - Institution: Optional school/university field
+  - Bio: Multi-line textarea for user description
+  - Social Links: LinkedIn and GitHub profile URLs
+
+3. FORM VALIDATION:
+  - Client-side: Required fields, email format, file type validation
+  - Server-side: Password matching, field validation (handled by view)
+
+4. FORM ACTIONS:
+  - Cancel: Returns to user profile without saving
+  - Save: Submits form with multipart encoding for file upload
+
+Required User Permissions:
+- Must be authenticated and editing own profile (enforced by view)
+
+Security Features:
+- CSRF protection token
+- File upload restricted to images
+- Username modification disabled (read-only)
+
+JavaScript Dependencies:
+- previewPhoto() function for image preview functionality
+- FileReader API for client-side image preview
+-->
+
+
+{% extends "main.html" %}
+
+{% load static %}
+
+{% block title %}
+    Noxa - {{ user.username }} - Edit personal informations
+{% endblock title %}
+
+{% block content %}
+
+<div class="editprofile__container">
+    <h1>Modify personal informations</h1>
+    <form action="" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <div class="form__group">
+            <label for="photo" class="form__group--label">Profile picture</label>
+            {% if user.photo %}
+                <img src="{{ user.photo.url }}" alt="Preview photo" class="photo-preview" id="photoPreview" onclick="document.getElementById('photo').click();" />
+            {% else %}
+                <img src="{% static 'images/avatar.svg' %}" alt="Preview photo" class="photo-preview" id="photoPreview" onclick="document.getElementById('photo').click();" />
+            {% endif %}
+            <input type="file" name="photo" id="photo" class="form__group--control d-none" accept="image/*" onchange="previewPhoto(event)" />
+            <small class="small-text">Click on image to change profile picture</small>
+        </div>
+
+        <div class="form__group">
+            <label for="username" class="form__group--label">Username</label>
+            <input class="form__group--control" type="text" name="username" id="username" value="{{ user.username }}" required disabled>
+        </div>
+
+        <div class="form__group">
+            <label for="email" class="form__group--label">Email address</label>
+            <input class="form__group--control" type="email" name="email" id="email" value="{{ user.email }}" required placeholder="johndoe@gmail.com"/>
+        </div>
+
+        <div class="form__group">
+            <label for="password1" class="form__group--label">New Password</label>
+            <input type="password" class="form__group--control" id="password1" name="password1" placeholder="Leave blank to keep current password"/>
+        </div>
+
+        <div class="form__group">
+            <label for="password2" class="form__group--label">Confirm New Password</label>
+            <input type="password" class="form__group--control" id="password2" name="password2" placeholder="Confirm new password"/>
+        </div>
+
+        <div class="form__group">
+            <label for="school" class="form__group--label">Institution / School</label>
+            <input type="text" class="form__group--control" id="school" name="school" placeholder="ENSAE Dakar" value="{{ user.school }}"/>
+        </div>
+
+        <div class="form__group">
+            <label for="bio" class="form__group--label">Bio</label>
+            <textarea type="text" class="form__group--control" id="bio" name="bio" rows="4" placeholder="Describe yourself in few words">{{ user.bio }}</textarea>
+        </div>
+
+        <div class="form__group">
+            <label for="linkedin" class="form__group--label">Profil LinkedIn</label>
+            <input type="url" class="form__group--control" id="linkedin" name="linkedin" placeholder="https://linkedin.com/in/..." value="{{ user.linkedin }}"/>
+        </div>
+
+        <div class="form__group">
+            <label for="github" class="form__group--label">Profil GitHub</label>
+            <input type="url" class="form__group--control" id="github" name="github" placeholder="https://github.com/..." value="{{ user.github }}"/>
+        </div>
+
+        <div class="btns">
+            <a href="{% url 'base:user-profile' user.id %}" class="btn btn-secondary">Cancel</a>
+            <button type="submit" class="btn btn-primary">Save profile</button>
+        </div>
+    </form>
+</div>
+
+{% endblock content %}
+
+
+{% block js %}
+
+<script>
+    function previewPhoto(event) {
+        const input = event.target;
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('photoPreview').src = e.target.result;
+            }
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+</script>
+
+{% endblock js %}
+
+
+
+
+
+
+
+
+

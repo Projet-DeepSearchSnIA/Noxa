@@ -1,0 +1,54 @@
+:root {
+    --red: hsl(348, 97%, 39%);
+    --green: hsl(163, 72%, 41%);
+    --white: hsl(0, 0%, 100%);
+    --black: hsl(0, 0%, 0%);
+    /* --brightred: hsl(356, 69%, 56%); */
+
+    /* brand color */
+    --brand-color: hsl(210, 88%, 40%);
+
+    /* primary */
+    --light-bg: hsl(0, 0%, 100%);
+    --light-line1: hsl(227, 47%, 96%);
+
+    --very-dark-blue: hsl(220, 13%, 13%);
+    --dark-grayish-blue: hsl(219, 9%, 45%);
+    --grayish-blue: hsl(220, 14%, 75%);
+    --light-grayish-blue: hsl(223, 64%, 98%);
+
+    --light-top-bg: hsl(225, 100%, 98%);
+    --light-card-bg: hsl(227, 47%, 96%);
+    --light-card-hover: hsl(228, 33%, 91%);
+
+    /* additional colors */
+    --color1: hsl(163, 83%, 64%);
+    --color2: hsl(180, 74%, 72%);
+    --color3: hsl(210, 100%, 73%);
+    --color4: hsl(244, 98%, 80%);
+    --color5: hsl(198, 19%, 89%);
+    --color6: hsl(168, 100%, 36%);
+    --color7: hsl(179, 100%, 40%);
+    --color8: hsl(206, 92%, 46%);
+    --color9: hsl(247, 74%, 63%);
+    --color10: hsl(204, 14%, 93%);
+    --color11: hsl(46, 100%, 83%);
+    --color12: hsl(11, 90%, 80%);
+    --color13: rgb(255, 117, 117);
+    --color14: hsl(339, 97%, 73%);
+    --color15: hsl(196, 7%, 42%);
+    --color16: hsl(39, 97%, 71%);
+    --color17: hsl(12, 70%, 61%);
+    --color19: hsl(331, 78%, 59%);
+    --color20: hsl(193, 9%, 19%);
+
+    /*Highlights*/
+    --high-light-1: hsl(0, 0%, 100%);
+    --high-light-2: hsl(0, 8%, 95%);
+
+    /*Hovers*/
+    --row-hover: rgb(222, 226, 230);
+    --li-hover: hsl(20, 15%, 92%);
+    /*Borders*/
+    --border: hsl(0, 5%, 85%);
+}

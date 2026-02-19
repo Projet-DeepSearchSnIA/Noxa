@@ -1,0 +1,50 @@
+
+{% extends "main.html" %}
+
+{% load static %}
+
+{% load user_extras %}
+
+{% block title %}
+    Noxa - Notifications
+{% endblock title %}
+
+{% block content %}
+
+<div class="followers__container">
+    <p class="first">{{ user.username}}'s followers</p>
+
+    <p class="second"><strong>{{ followers.count }}</strong> followers</p>
+
+    <div class="profile__container--relations__item--content__item--followers">
+        {% for follower in followers %}
+            <div class="profile__container--relations__item--content__item--followers__follower">
+                <div class="profile__container--relations__item--content__item--followers__follower--photo">
+                    <img src="{{ follower.photo.url }}" alt="">
+                </div>
+                <div class="profile__container--relations__item--content__item--followers__follower--content">
+                    <div class="infos">
+                        <a class="username" href="{% url 'base:user-profile' follower.id %}">@{{ follower.username }}</a>
+                        <p>{{ follower.school }}</p>
+                    </div>
+                    {% if request.user.id != follower.id %}
+                        {% if request.user|is_following:follower %}
+                            <a class="unfol-btn" href="{% url 'base:unfollow-user' follower.id %}">Unfollow</a>
+                        {% else %}
+                            <a class="fol-btn" href="{% url 'base:follow-user' follower.id %}">Follow</a>
+                        {% endif %}
+                    {% endif %}
+                </div>
+                
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+{% endblock content %}
+
+
+
+
+
+

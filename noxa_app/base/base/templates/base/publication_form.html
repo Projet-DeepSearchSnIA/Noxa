@@ -1,0 +1,325 @@
+
+{% extends "main.html" %}
+
+{% load static %}
+
+{% block title %}
+    Noxa - Publish paper
+{% endblock title %}
+
+{% block content %}
+
+<div class="publicationform__container">
+    <form class="publicationform__container--form" method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <div class="publicationform__container--form__content">
+            <div class="publicationform__container--form__card">
+                <div class="form__group">
+                    <label for="theme" class="form__group--label required">Theme</label>
+                    <input type="text" id="theme" name="theme" class="form__control" 
+                        placeholder="Enter the theme of your publication..." required>
+                </div>
+
+                <div class="form__group">
+                    <label for="topic" class="form__group--label">Topic</label>
+                    <div class="autocomplete-container">
+                        <input class="form__control" required type="text" 
+                            name="topic" id="topic" placeholder="Which topic does your publication talk about ?">
+                        <div id="topic-suggestions" class="autocomplete-suggestions"></div>
+                    </div>
+                    <div class="form-text">
+                        Egs: Data Science 
+                        <br>
+                        Please, make sure you classify your paper correctly in the suitable topic. For more information, visit <a href="">the topics page</a>
+                    </div>
+                </div>
+
+                <div class="form__group">
+                    <label for="authors-input" class="form__group--label">Additional Authors</label>
+                    <div class="autocomplete-container">
+                        <input type="text" id="authors-input" class="form__control" 
+                            placeholder="Type to search for authors...">
+                        <div id="authors-suggestions" class="autocomplete-suggestions"></div>
+                    </div>
+                    <div id="selected-authors" class="selected-items"></div>
+                    <input type="hidden" id="authors-hidden" name="authors" value="">
+                    <div class="form-text">
+                        Add authors usernames here. This excludes your username as your are the default author. Look at <a href="">Noxa authors policy</a> for more information
+                    </div>
+                </div>
+
+                <div class="form__group">
+                    <label for="tags-input" class="form__group--label">Tags</label>
+                    <div class="autocomplete-container">
+                        <input type="text" id="tags-input" class="form__control" 
+                            placeholder="Type to search for tags or create new ones...">
+                        <div id="tags-suggestions" class="autocomplete-suggestions"></div>
+                    </div>
+                    <div id="selected-tags" class="selected-items"></div>
+                    <input type="hidden" id="tags-hidden" name="tags" value="">
+                    <div class="form-text">
+                        Egs: machinelearning
+                        <br>
+                        Tags helps the visibility of your paper for the community. Add meaningful tags
+                    </div>
+                </div>
+
+                <div class="form__group">
+                    <label for="affiliations" class="form__group--label">affiliations</label>
+                    <textarea id="affiliations" name="affiliations" class="form__control" rows="2"
+                                placeholder="Enter your paper's affiliations..."></textarea>
+                    <div class="form-text">
+                        Enter affiliations separated by commas (,)
+                        <br>
+                        Tell use more about your affiliations i.e. the organism or institutions you worked at or with for the making of this paper.
+                    </div>
+                </div>
+
+                <div class="form__group">
+                    <label for="description" class="form__group--label">Description</label>
+                    <textarea id="description" name="description" class="form__control" rows="4"
+                                placeholder="Provide a description of your paper..."></textarea>
+                    <div class="form-text">Give readers an overview of the content and methodology</div>
+                </div>
+            </div>
+
+            <div class="publicationform__container--form__card">
+                <div class="form__group">
+                    <label for="file" class="form__group--label required">PDF File</label>
+                    <div class="file-upload" id="file-upload">
+                        <input type="file" id="file" name="file" accept=".pdf" required>
+                        <label for="file" class="file-upload-label">
+                            <div>📄 Drop your PDF file here or click to browse</div>
+                            <div class="file-info">Maximum file size: 10MB</div>
+                        </label>
+                    </div>
+                    <div id="file-name" class="form-text"></div>
+                </div>
+
+                <div class="form__group">
+                    <label for="markdown-editor" class="form__group--label">Summary</label>
+                    <textarea id="markdown-editor" name="summary" class="form__control" rows="4"
+                                placeholder="Highlight the main results or takeaways..."></textarea>
+                    <div class="form-text">
+                        Markdown supported (Click on the eye icon above for preview)
+                        <br> 
+                        Highlight the main results or takeaways. Common practice is putting in an abstract section (in multiple languages if possible), a methodology section and then a result section
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="publicationform__container--form__btns">
+            <a href="{% url 'base:home' %}" class="btn btn-secondary">Cancel</a>
+            <button type="submit" class="btn btn-primary">Publish</button>
+        </div>
+    </form>
+</div>
+
+{% endblock content %}
+
+{% block js %}
+
+<script>
+    new EasyMDE({ element: document.getElementById("markdown-editor") });
+</script>
+
+<script>
+    $(document).ready(function() {
+        let selectedAuthors = [];
+        let selectedTags = [];
+        let searchTimeout;
+
+        // Generic autocomplete function
+        function setupAutocomplete(inputId, suggestionsId, endpoint, selectedArray, selectedContainerId, hiddenInputId, allowCreate = false) {
+            const input = $('#' + inputId);
+            const suggestions = $('#' + suggestionsId);
+            const selectedContainer = $('#' + selectedContainerId);
+            const hiddenInput = $('#' + hiddenInputId);
+
+            input.on('input', function() {
+                const query = $(this).val().trim();
+                
+                clearTimeout(searchTimeout);
+                
+                if (query.length === 0) {
+                    suggestions.hide();
+                    return;
+                }
+
+                searchTimeout = setTimeout(function() {
+                    $.ajax({
+                        url: endpoint,
+                        data: { q: query },
+                        success: function(data) {
+                            suggestions.empty();
+                            
+                            if (data.results && data.results.length > 0) {
+                                data.results.forEach(function(item) {
+                                    if (!selectedArray.some(selected => selected.id === item.id)) {
+                                        const suggestion = $('<div class="autocomplete-suggestion">')
+                                            .text(item.text)
+                                            .data('id', item.id)
+                                            .data('text', item.text);
+                                        suggestions.append(suggestion);
+                                    }
+                                });
+                                suggestions.show();
+                            } else if (allowCreate && query.length > 0) {
+                                const createSuggestion = $('<div class="autocomplete-suggestion">')
+                                    .html(`Create new: "<strong>${query}</strong>"`)
+                                    .data('id', null)
+                                    .data('text', query);
+                                suggestions.append(createSuggestion);
+                                suggestions.show();
+                            } else {
+                                if (!allowCreate) {
+                                    suggestions.html('<div class="no-results">No matching results found</div>');
+                                    suggestions.show();
+                                } else {
+                                    suggestions.hide();
+                                }
+                            }
+                        },
+                        error: function() {
+                            suggestions.html('<div class="no-results">Error searching. Please try again.</div>');
+                            suggestions.show();
+                        }
+                    });
+                }, 300);
+            });
+
+            // Handle suggestion clicks
+            suggestions.on('click', '.autocomplete-suggestion', function() {
+                const id = $(this).data('id');
+                const text = $(this).data('text');
+                
+                if (!selectedArray.some(item => item.text === text)) {
+                    selectedArray.push({ id: id, text: text });
+                    updateSelectedItems(selectedArray, selectedContainer, hiddenInput, inputId);
+                    input.val('');
+                    suggestions.hide();
+                }
+            });
+
+            // Hide suggestions when clicking outside
+            $(document).on('click', function(e) {
+                if (!$(e.target).closest('.autocomplete-container').length) {
+                    suggestions.hide();
+                }
+            });
+
+            // Handle Enter key
+            input.on('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const query = $(this).val().trim();
+                    const visibleSuggestions = suggestions.find('.autocomplete-suggestion:visible');
+                    
+                    if (visibleSuggestions.length === 1) {
+                        visibleSuggestions.click();
+                    } else if (allowCreate && query.length > 0 && visibleSuggestions.length === 0) {
+                        // Create new tag if no suggestions and creation is allowed
+                        if (!selectedArray.some(item => item.text === query)) {
+                            selectedArray.push({ id: null, text: query });
+                            updateSelectedItems(selectedArray, selectedContainer, hiddenInput, inputId);
+                            input.val('');
+                            suggestions.hide();
+                        }
+                    }
+                }
+            });
+        }
+
+        // Update selected items display
+        function updateSelectedItems(selectedArray, container, hiddenInput, inputType) {
+            container.empty();
+            
+            selectedArray.forEach(function(item, index) {
+                const selectedItem = $(`
+                    <div class="selected-item">
+                        <span>${item.text}</span>
+                        <button type="button" class="selected-item-remove" data-index="${index}">×</button>
+                    </div>
+                `);
+                container.append(selectedItem);
+            });
+
+            // Update hidden input
+            const values = selectedArray.map(item => item.text).join(',');
+            hiddenInput.val(values);
+        }
+
+        // Handle remove buttons
+        $(document).on('click', '.selected-item-remove', function() {
+            const index = $(this).data('index');
+            const container = $(this).closest('.selected-items');
+            
+            if (container.attr('id') === 'selected-authors') {
+                selectedAuthors.splice(index, 1);
+                updateSelectedItems(selectedAuthors, $('#selected-authors'), $('#authors-hidden'), 'authors');
+            } else if (container.attr('id') === 'selected-tags') {
+                selectedTags.splice(index, 1);
+                updateSelectedItems(selectedTags, $('#selected-tags'), $('#tags-hidden'), 'tags');
+            }
+        });
+
+        // Setup autocomplete for authors (no creation allowed)
+        setupAutocomplete('authors-input', 'authors-suggestions', '/filter-authors/', selectedAuthors, 'selected-authors', 'authors-hidden', false);
+        
+        // Setup autocomplete for tags (creation allowed)
+        setupAutocomplete('tags-input', 'tags-suggestions', '/filter-tags/', selectedTags, 'selected-tags', 'tags-hidden', true);
+
+        // Setup autocomplete for topics (no creation, single selection)
+        $('#topic').on('input', function() {
+            const query = $(this).val().trim();
+            
+            clearTimeout(searchTimeout);
+            
+            if (query.length === 0) {
+                $('#topic-suggestions').hide();
+                return;
+            }
+
+            searchTimeout = setTimeout(function() {
+                $.ajax({
+                    url: '/filter-topics/',
+                    data: { q: query },
+                    success: function(data) {
+                        const suggestions = $('#topic-suggestions');
+                        suggestions.empty();
+                        
+                        if (data.results && data.results.length > 0) {
+                            data.results.forEach(function(item) {
+                                const suggestion = $('<div class="autocomplete-suggestion">')
+                                    .text(item.text)
+                                    .data('text', item.text);
+                                suggestions.append(suggestion);
+                            });
+                            suggestions.show();
+                        } else {
+                            suggestions.html('<div class="no-results">No matching topics found</div>');
+                            suggestions.show();
+                        }
+                    }
+                });
+            }, 300);
+        });
+
+        // Handle topic selection
+        $('#topic-suggestions').on('click', '.autocomplete-suggestion', function() {
+            const text = $(this).data('text');
+            $('#topic').val(text);
+            $('#topic-suggestions').hide();
+        });
+
+        // File upload handling
+        $('#file').on('change', function() {
+            const fileName = this.files[0]?.name;
+            $('#file-name').text(fileName ? `Selected: ${fileName}` : '');
+        });
+    });
+</script>
+
+{% endblock js%}

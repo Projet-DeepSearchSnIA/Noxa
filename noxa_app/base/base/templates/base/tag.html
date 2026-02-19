@@ -1,0 +1,75 @@
+{% extends "main.html" %}
+
+{% load static %}
+
+{% block title %}
+    {{ pub.theme }}
+{% endblock title %}
+
+{% block content %}
+
+<div class="tag__container">
+    <p>#{{tag.id}} {{tag.name}}</p>
+
+    <small>{{publications.count}} publications</small>
+
+    <div  class="home__container--second__item--main">
+        {% for pub in publications %}
+
+
+        <div class="recent">
+            <div class="recent__specs">
+                <a class="recent__specs--theme" href="{% url 'base:publication' pub.id %}">{{ pub.theme }}</a>
+                <a class="recent__specs--pdf" href="{% url 'base:pdf' pub.id %}" target="_blank">[pdf]</a>
+            </div>
+            
+            {% if pub.topic %}
+            <div class="recent__meta">
+                <a class="recent__topic" href="">{{ pub.topic.name }}</a>
+            </div>
+            {% endif %}
+            
+            <div class="recent__authors">
+                {% for author in pub.authors.all %}
+                    <a class="recent__authors--author" href="{% url 'base:user-profile' author.id %}">@{{ author.username }}</a>
+                {% endfor %}
+            </div>
+            
+            <p class="recent__description">{{ pub.description }}</p>
+            
+            {% if pub.tags.exists %}
+            <div class="recent__tags">
+                {% for tag in pub.tags.all %}
+                    <a class="recent__tag" href="">#{{ tag.name }}</a>
+                {% endfor %}
+            </div>
+            {% endif %}
+            
+            <div class="recent__footer">
+                <small>Published {{ pub.created|timesince }} ago</small>
+                {% if pub.page_count %}
+                <small class="recent__pages">{{ pub.page_count }} pages</small>
+                {% endif %}
+            </div>
+        </div>
+            
+        <!-- <div class="recent">
+            <div class="recent__specs">
+                <a class="recent__specs--theme" href="{% url 'base:publication' pub.id %}">{{ pub.theme }}</a>
+                <a class="recent__specs--pdf" href="{% url 'base:pdf' pub.id %}" target="_blank">[pdf]</a>
+            </div>
+            <div class="recent__authors">
+                {% for author in pub.authors.all %}
+                    <a class="recent__authors--author" href="{% url 'base:user-profile' author.id %}">@{{ author.username }}</a>
+                {% endfor %}
+            </div>
+            <p class="recent__description">{{ pub.description }}</p>
+            <small>Published {{ pub.created|timesince }} ago</small>
+        </div> -->
+
+        {% endfor%}
+    </div>
+</div>
+
+
+{% endblock content %}

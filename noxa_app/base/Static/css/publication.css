@@ -1,0 +1,542 @@
+.publication__container {
+    display: grid;
+    grid-template-columns: 3fr 1fr;
+    gap: 32px;
+    width: 100%;
+}
+
+.publication__container--card {
+    background: #ffffff;
+    /* border: 1px solid #e0e0e0; */
+    padding: 24px;
+    margin-bottom: 20px;
+}
+
+/* Main content area */
+.publication__container--view {
+    /* No additional styles needed for the grid item */
+}
+
+/* Tags and breadcrumb */
+.publication__container--view__tags {
+    margin-bottom: 12px;
+    font-size: 14px;
+}
+
+.publication__container--view__tags a {
+    color: #666666;
+    text-decoration: none;
+}
+
+.publication__container--view__tags a:hover {
+    color: #000000;
+    text-decoration: underline;
+}
+
+/* Publication date */
+.publication__container--view__date {
+    display: block;
+    color: #999999;
+    margin-bottom: 16px;
+    font-size: 13px;
+}
+
+.publication__container--view__date a {
+    color: #666666;
+    text-decoration: none;
+}
+
+.publication__container--view__date a:hover {
+    color: #000000;
+    text-decoration: underline;
+}
+
+.publication__container--view__stats {
+    margin-bottom: 20px;
+    font-size: 13px;
+    color: #666666;
+}
+
+.publication__container--view__stats .separator {
+    margin: 0 8px;
+    color: #cccccc;
+}
+
+.publication__container--view__stats .stat {
+    color: #666666;
+}
+
+/* Main title */
+.publication__container--view__theme {
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1.3;
+    color: #000000;
+    margin: 0 0 16px 0;
+}
+
+/* Authors */
+.publication__container--view__authors {
+    margin-bottom: 24px;
+}
+
+.publication__container--view__authors__author {
+    color: #666666;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 15px;
+}
+
+.publication__container--view__authors__author:hover {
+    color: #000000;
+    text-decoration: underline;
+}
+
+/* Affiliations */
+.publication__container--view__affiliations {
+    margin-bottom: 32px;
+    padding: 16px;
+    background-color: #f9f9f9;
+    border-left: 3px solid #e0e0e0;
+}
+
+.publication__container--view__affiliations--title {
+    font-weight: 600;
+    margin: 0 0 12px 0;
+    color: #000000;
+}
+
+.publication__container--view__affiliations--content p {
+    margin: 4px 0;
+    color: #333333;
+    font-size: 14px;
+}
+
+.publication__container--view__affiliations--content small {
+    color: #666666;
+    font-weight: 600;
+    margin-right: 4px;
+}
+
+/* Abstract */
+.publication__container--view__abstract {
+    margin-bottom: 40px;
+}
+
+.publication__container--view__abstract--title {
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0 0 16px 0;
+    color: #000000;
+    border-bottom: 2px solid #000000;
+    padding-bottom: 8px;
+}
+
+.publication__container--view__abstract--text {
+    line-height: 1.6;
+    color: #333333;
+    font-size: 15px;
+}
+
+/* Similar papers */
+.publication__container--view__similar--title {
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0 0 20px 0;
+    color: #000000;
+    border-bottom: 2px solid #000000;
+    padding-bottom: 8px;
+}
+
+.publication__container--view__similar--content__empty {
+    color: #999999;
+    font-style: italic;
+    text-align: center;
+    padding: 40px 0;
+}
+
+/* Sidebar */
+.publication__container--control {
+    /* No additional styles needed for the grid item */
+}
+
+.publication__container--control__card {
+    margin-bottom: 20px;
+}
+
+.publication__container--control__card--title {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0 0 16px 0;
+    color: #000000;
+    border-bottom: 1px solid #e0e0e0;
+    padding-bottom: 8px;
+}
+
+.publication__container--control__card--content {
+    font-size: 14px;
+}
+
+.publication__container--control__card--content p {
+    margin: 8px 0;
+    color: #333333;
+}
+
+.publication__container--control__card--content a {
+    color: #000000;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.publication__container--control__card--content a:hover {
+    text-decoration: underline;
+}
+
+/* Action buttons */
+.action__btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 12px 16px;
+    margin-bottom: 8px;
+    background: #ffffff;
+    border: 1px solid #e0e0e0;
+    color: #333333;
+    text-decoration: none;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.action__btn:hover {
+    background: #f5f5f5;
+    border-color: #000000;
+    color: #000000;
+}
+
+.action__btn div {
+    display: flex;
+    align-items: center;
+}
+
+.action__btn svg {
+    width: 20px;
+    height: 20px;
+}
+
+.action__btn p {
+    margin: 0;
+    font-weight: 500;
+}
+
+.action__btn.login {
+    background: #000000;
+    color: #ffffff;
+    justify-content: center;
+    font-weight: 600;
+}
+
+.action__btn.login:hover {
+    background: #333333;
+}
+
+/* Discussion items */
+.publication__container--control__card--content__discussion {
+    padding: 12px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.publication__container--control__card--content__discussion:last-child {
+    border-bottom: none;
+}
+
+.publication__container--control__card--content__discussion .user {
+    text-decoration: none;
+}
+
+.publication__container--control__card--content__discussion .author {
+    color: #666666;
+    font-size: 13px;
+}
+
+.publication__container--control__card--content__discussion .title {
+    display: block;
+    color: #000000;
+    text-decoration: none;
+    font-weight: 500;
+    margin-top: 4px;
+    font-size: 14px;
+}
+
+.publication__container--control__card--content__discussion .title:hover {
+    text-decoration: underline;
+}
+
+
+/************************************************************************************************/
+/********************************* Similar publications *****************************************/
+/************************************************************************************************/
+
+.publication__container--view__similar--content .recent {
+    border: 1px solid #e0e0e0;
+    padding: 24px;
+    margin-bottom: 20px;
+    background: #ffffff;
+    transition: box-shadow 0.2s ease;
+    width: 100%;
+}
+
+.publication__container--view__similar--content .recent small {
+    color: #999999;
+    font-size: 13px;
+}
+
+.publication__container--view__similar--content .recent .recent__specs {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.publication__container--view__similar--content .recent .recent__specs .recent__specs--theme {
+    color: #000000;
+    text-decoration: none;
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 1.3;
+    flex-grow: 1;
+}
+
+.publication__container--view__similar--content .recent .recent__specs .recent__specs--theme:hover {
+    text-decoration: underline;
+}
+
+.publication__container--view__similar--content .recent .recent__specs .recent__specs--pdf {
+    color: #666666;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 4px 8px;
+    border: 1px solid #cccccc;
+    border-radius: 3px;
+    transition: all 0.2s ease;
+}
+
+.publication__container--view__similar--content .recent .recent__specs .recent__specs--pdf:hover {
+    text-decoration: underline;
+    background-color: #000000;
+    color: #ffffff;
+    border-color: #000000;
+}
+
+.publication__container--view__similar--content .recent .recent__authors {
+    margin-bottom: 12px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.publication__container--view__similar--content .recent .recent__authors .recent__authors--author {
+    color: #666666;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.publication__container--view__similar--content .recent .recent__authors .recent__authors--author:hover {
+    color: #000000;
+    text-decoration: underline;
+}
+
+.recent__authors--author:not(:last-child)::after {
+    content: "·";
+    margin-left: 8px;
+    color: #cccccc;
+}
+
+.publication__container--view__similar--content .recent .recent__description {
+    color: #333333;
+    font-size: 15px;
+    line-height: 1.5;
+    margin: 0 0 12px 0;
+}
+
+
+.recent__topic {
+    display: inline-block;
+    background-color: #f5f5f5;
+    color: #666666;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    text-decoration: none;
+    margin-right: 8px;
+}
+
+.recent__topic:hover {
+    background-color: #e0e0e0;
+    color: #000000;
+}
+
+.recent__tags {
+    margin-top: 8px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.recent__tag {
+    background-color: #ffffff;
+    border: 1px solid #e0e0e0;
+    color: #666666;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 11px;
+    text-decoration: none;
+}
+
+.recent__tag:hover {
+    background-color: #f5f5f5;
+    color: #000000;
+}
+
+
+
+
+/* Modal for discussion creation */
+/*************************************************************************************************************/
+
+.modal__discussion {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.1);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal__discussion .modal__discussion--modal {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    width: 40%;
+    background: var(--white);
+    height: auto;
+    border-radius: 5px;
+    padding: 15px;
+}
+
+.modal__discussion.show {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal__discussion--modal__header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    position: relative;
+}
+
+.modal__discussion--modal__header--title {
+    width: 100%;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.modal__discussion--modal__form {
+    width: 100%;
+    position: relative;
+}
+
+.modal__discussion--modal__form .form__group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+}
+
+.modal__discussion--modal__form .form__group label {
+    text-align: left;
+    width: 100%;
+    font-size: 13px;
+}
+
+.modal__discussion--modal__form .form__group input,
+.modal__discussion--modal__form .form__group textarea {
+    width: 100%;
+    font-size: 14px;
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #e0e0e0;
+    font-size: 14px;
+    color: #333333;
+}
+
+.form__group--input:focus,
+.form__group textarea:focus {
+    outline: none;
+    border-color: #000000;
+}
+
+.modal__discussion--modal__btns {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 5px 10px;
+}
+
+.modal__discussion--modal__btns .create {
+    background: var(--brand-color);
+    color: var(--white);
+    border: none;
+    outline: none;
+    padding: 5px 8px;
+    border-radius: 888px;
+    width: 47%;
+}
+
+.modal__discussion--modal__btns .cancel {
+    background: grey;
+    color: var(--white);
+    border: none;
+    outline: none;
+    padding: 5px 8px;
+    border-radius: 888px;
+    width: 47%;
+}
+
+.close_btn {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #666666;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.close_btn:hover {
+    color: #000000;
+}
+
+
+
+

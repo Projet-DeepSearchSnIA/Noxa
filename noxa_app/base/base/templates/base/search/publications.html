@@ -1,0 +1,41 @@
+{% extends "search_template.html" %}
+
+{% load static %}
+
+{% block searchcontent %}
+
+{% if search_results %}
+<div class="search-section">
+    <h3 class="search-section__title">Publications</h3>
+    <div class="search-section__content">
+        {% for pub in search_results %}
+        <div class="search-item publication-item">
+            <div class="publication-item__header">
+                <a class="publication-item__title" href="{% url 'base:publication' pub.id %}?from=search&q={{ q }}&tab={{ active_tab }}">{{ pub.theme }}</a>
+                <a class="publication-item__pdf" href="{% url 'base:pdf' pub.id %}?from=search&q={{ q }}&tab={{ active_tab }}" target="_blank">PDF</a>
+            </div>
+            <div class="publication-item__authors">
+                {% for author in pub.authors.all %}
+                    <a class="author-link" href="{% url 'base:user-profile' author.id %}?from=search&q={{ q }}&tab={{ active_tab }}">{{ author.username }}</a>{% if not forloop.last %}, {% endif %}
+                {% endfor %}
+            </div>
+            {% if pub.description %}
+            <p class="publication-item__description">{{ pub.description|truncatewords:20 }}</p>
+            {% endif %}
+            <div class="publication-item__meta">
+                {% if pub.topic %}
+                <span class="meta-item">{{ pub.topic.name }}</span>
+                {% endif %}
+                <span class="meta-item">{{ pub.created|timesince }} ago</span>
+                {% if pub.page_count %}
+                <span class="meta-item">{{ pub.page_count }} pages</span>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+
+{% endblock searchcontent %}

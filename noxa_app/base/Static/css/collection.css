@@ -1,0 +1,230 @@
+/* collection.css*/
+
+.collection__container {
+    display: grid;
+    grid-template-columns: 1fr 3fr;
+    gap: 25px;
+    width: 100%;
+}
+
+.collection__container--first {
+    width: 100%;
+}
+
+.collection__container--second {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+}
+
+.collection__container--second__header {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    width: 100%;
+    padding: 30px 50px;
+}
+
+.collection__container--second__header--title {
+    font-size: 2.5rem;
+    font-weight: 500;
+}
+
+.collection__container--second__header--info {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+}
+
+.collection__container--second__header--info__author {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.collection__container--second__header--info__author--avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    padding: 0;
+    border-radius: 50%;
+    border: 2px solid;
+    overflow: hidden;
+    margin-right: 5px;
+    width: 25px;
+    height: 25px;
+}
+
+.collection__container--second__header--info__author--avatar img {
+    width: 25px;
+    height: 25px;
+}
+
+
+/* Styling the collection table */
+
+.table_container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+}
+
+.table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+.table th,
+.table td {
+    position: relative;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+.resizer {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 5px;
+    cursor: w-resize;
+    user-select: none;
+}
+
+/*.resizer:hover,
+.resizing {
+    border-right: 2px solid var(--peach);
+}*/
+
+.resizable {
+    border: 1px solid gray;
+    height: 100px;
+    width: 100px;
+    position: relative;
+}
+
+.table .cols {
+    width: 100%;
+}
+
+.table .cols .big_head {
+    width: 100%;
+    border-bottom: 1px solid var(--black);
+    color: var(--dark-grayish-blue);
+}
+
+.table .cols .big_head:hover .head {
+    position: relative;
+}
+
+.table .cols .big_head:hover .head::after {
+    content: "";
+    position: absolute;
+    right: 0;
+    top: 25%;
+    height: 50%;
+    border-right: 1px solid var(--black);
+}
+
+.table .cols .big_head .head {
+    padding: 4px 10px;
+    text-align: start;
+    font-size: 14px;
+    font-weight: 600;
+    /* text-transform: uppercase; */
+    /* border-top: 2px solid var(--border);
+    border-right: 2px solid var(--border);
+    border-left: 2px solid var(--border); */
+}
+
+.table .cols .big_contents {
+    width: 100%;
+}
+
+.table .cols .big_contents:hover,
+.table .cols .big_contents:hover {
+    background: var(--row-hover);
+    border: var(--row-hover);
+}
+
+.table .cols .big_contents .contents {
+    padding: 8px 10px;
+    text-align: start;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--black);
+    /* border: 2px solid var(--border); */
+    border-top: none;
+}
+
+.table .cols .big_contents .contents.number {
+    position: relative;
+    cursor: pointer;
+}
+
+.table .cols .big_contents .contents.number .n {
+    display: block;
+    /* transition: opacity 0.2s ease; */
+}
+
+.table .cols .big_contents .contents.number .svg {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    opacity: 0;
+    color: var(--black);
+    /* transition: opacity 0.2s ease; */
+}
+
+.table .cols .big_contents .contents.number:hover .n {
+    opacity: 0;
+}
+
+.table .cols .big_contents .contents.number:hover .svg {
+    opacity: 1;
+}
+
+.table .cols .big_contents .contents.title a {
+    text-decoration: none;
+    color: var(--black);
+}
+
+.table .cols .big_contents .contents.title a:hover {
+    text-decoration: underline;
+}
+
+.table .cols .big_contents .contents.title .theme {
+    font-size: 15px;
+}
+
+.table .cols .big_contents .contents.title .theme {
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 350px;
+}
+
+
+.table .cols .big_contents .contents.actions button {
+    padding: 2px 5px;
+}
+
+
+
+
+
+
+
+

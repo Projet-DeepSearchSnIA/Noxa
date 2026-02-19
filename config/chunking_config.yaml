@@ -1,0 +1,110 @@
+# Configuration pour le chunking de documents
+
+chunking:
+  # Répertoires
+  input_dir: "data/extracted"      # Documents extraits
+  output_dir: "data/chunked"       # Chunks en sortie
+  
+  # Text Splitter (LangChain)
+  text_splitter:
+    # Taille des chunks
+    chunk_size: 1000               # Caractères par chunk
+    chunk_overlap: 200             # Chevauchement entre chunks
+    
+    # Stratégie de découpage
+    # - recursive: Découpage hiérarchique (par défaut)
+    # - semantic: Basé sur la structure (titres, sections)
+    # - mixed: Sémantique puis récursif si besoin
+    strategy: "mixed"
+    
+    # Séparateurs (ordre de priorité)
+    separators:
+      - "\n\n\n"    # Triple saut (sections majeures)
+      - "\n\n"      # Double saut (paragraphes)
+      - "\n"        # Simple saut (lignes)
+      - ". "        # Fin de phrase
+      - "! "
+      - "? "
+      - "; "
+      - ", "
+      - " "         # Espaces
+      - ""          # Caractères (dernier recours)
+    
+    keep_separator: true
+  
+  # Optimiseur de chunks
+  optimizer:
+    enabled: true
+    
+    # Contraintes de taille
+    min_chunk_size: 100            # Taille minimale
+    max_chunk_size: 2000           # Taille maximale
+    target_chunk_size: 1000        # Taille cible
+    
+    # Optimisations
+    merge_small_chunks: true       # Fusionner petits chunks
+    split_large_chunks: true       # Redécouper gros chunks
+    remove_duplicates: true        # Supprimer doublons
+    similarity_threshold: 0.9      # Seuil similarité (0-1)
+  
+  # Métadonnées à enrichir
+  metadata:
+    include_document_title: true
+    include_document_author: true
+    include_page_numbers: true
+    include_section_titles: true
+    include_extraction_method: true
+    include_content_flags: true    # has_images, has_tables
+
+# Profils de configuration
+
+profiles:
+  # Petits chunks pour recherche précise
+  precise:
+    text_splitter:
+      chunk_size: 500
+      chunk_overlap: 100
+      strategy: "recursive"
+    optimizer:
+      min_chunk_size: 50
+      max_chunk_size: 800
+      target_chunk_size: 500
+  
+  # Gros chunks pour contexte large
+  contextual:
+    text_splitter:
+      chunk_size: 2000
+      chunk_overlap: 400
+      strategy: "semantic"
+    optimizer:
+      min_chunk_size: 500
+      max_chunk_size: 3000
+      target_chunk_size: 2000
+  
+  # Équilibré (par défaut)
+  balanced:
+    text_splitter:
+      chunk_size: 1000
+      chunk_overlap: 200
+      strategy: "mixed"
+    optimizer:
+      min_chunk_size: 100
+      max_chunk_size: 2000
+      target_chunk_size: 1000
+  
+  # Pour embedding modèle Jina v4 (8192 tokens max)
+  jina_v4:
+    text_splitter:
+      chunk_size: 6000              # ~1500 tokens
+      chunk_overlap: 600
+      strategy: "mixed"
+    optimizer:
+      min_chunk_size: 500
+      max_chunk_size: 7000
+      target_chunk_size: 6000
+
+# Notes sur les tailles pour embedding
+# Jina Embeddings v4: 8192 tokens max
+# Approximation: 1 token ≈ 4 caractères
+# Donc 8192 tokens ≈ 32768 caractères
+# On reste en dessous pour sécurité: 6000 chars ≈ 1500 tokens

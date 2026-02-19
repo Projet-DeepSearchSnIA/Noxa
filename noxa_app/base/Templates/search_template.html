@@ -1,0 +1,59 @@
+{% extends "home_template.html" %}
+
+{% load static %}
+
+{% block homecontent %}
+
+<div class="home__container--second home__container--card">
+    <div class="search__container">
+
+        <div class="search__container--header">
+            <a href="{% url 'base:search' %}?q={{ q }}" 
+            class="search__container--header__item {% if active_tab == 'all' %}active{% endif %}">
+                All
+            </a>
+            <a href="{% url 'base:search_tab' tab='publications' %}?q={{ q }}" 
+            class="search__container--header__item {% if active_tab == 'publications' %}active{% endif %}">
+                Publications
+            </a>
+            <a href="{% url 'base:search_tab' tab='authors' %}?q={{ q }}" 
+            class="search__container--header__item {% if active_tab == 'authors' %}active{% endif %}">
+                Authors
+            </a>
+            <a href="{% url 'base:search_tab' tab='collections' %}?q={{ q }}" 
+            class="search__container--header__item {% if active_tab == 'collections' %}active{% endif %}">
+                Collections
+            </a>
+            <a href="{% url 'base:search_tab' tab='discussions' %}?q={{ q }}" 
+            class="search__container--header__item {% if active_tab == 'discussions' %}active{% endif %}">
+                Discussions
+            </a>
+            <a href="{% url 'base:search_tab' tab='profiles' %}?q={{ q }}" 
+            class="search__container--header__item {% if active_tab == 'profiles' %}active{% endif %}">
+                Profiles
+            </a>
+            <a href="{% url 'base:search_tab' tab='tags' %}?q={{ q }}" 
+            class="search__container--header__item {% if active_tab == 'tags' %}active{% endif %}">
+                Tags
+            </a>
+        </div>
+
+        <div class="search__container--content">
+
+            {% block searchcontent %}
+
+            {% endblock searchcontent %}
+
+        </div>
+
+    </div>
+</div>
+
+
+{% endblock homecontent %}
+
+
+
+
+
+

@@ -1,0 +1,22 @@
+{% extends "main.html" %}
+
+{% load static %}
+
+{% block title %}
+    Noxa - Create Course
+{% endblock title %}
+
+{% block content %}
+
+<div class="form-container">
+    <h2>Create Course</h2>
+
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+
+        <button type="submit" class="btn-submit">Save</button>
+    </form>
+</div>
+
+{% endblock %}

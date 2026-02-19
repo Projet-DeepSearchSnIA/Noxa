@@ -1,0 +1,41 @@
+{% extends "search_template.html" %}
+
+{% load static %}
+
+{% block searchcontent %}
+
+{% if search_results %}
+<div class="search-section">
+    <h3 class="search-section__title">Discussions</h3>
+    <div class="search-section__content">
+        {% for discussion in search_results %}
+        <div class="search-item discussion-item">
+            <div class="discussion-item__header">
+                <a href="{% url 'base:discussion' discussion.id %}?from=search&q={{ q }}&tab={{ active_tab }}" class="discussion-item__title">
+                    {{ discussion.title }}
+                </a>
+            </div>
+            {% if discussion.description %}
+            <p class="discussion-item__description">{{ discussion.description|truncatewords:15 }}</p>
+            {% endif %}
+            <div class="discussion-item__info">
+                <span class="discussion-item__creator">
+                    Started by <a href="{% url 'base:user-profile' discussion.creator.id %}?from=search&q={{ q }}&tab={{ active_tab }}" class="user-link">{{ discussion.creator.username }}</a>
+                    {% if discussion.creator in discussion.publication.authors.all %}
+                    <span class="creator-badge">author</span>
+                    {% endif %}
+                </span>
+            </div>
+            <div class="discussion-item__meta">
+                <span class="meta-item">About: <a href="{% url 'base:publication' discussion.publication.id %}?from=search&q={{ q }}&tab={{ active_tab }}" class="publication-link">{{ discussion.publication.theme|truncatewords:5 }}</a></span>
+                <span class="meta-item">{{ discussion.participants.count }} participants</span>
+                <span class="meta-item">{{ discussion.updated|timesince }} ago</span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+
+{% endblock searchcontent %}

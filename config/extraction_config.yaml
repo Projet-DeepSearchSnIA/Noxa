@@ -1,0 +1,34 @@
+# configs/extraction_config.yaml
+extraction:
+  raw_dir: "data/raw"
+  output_dir: "data/extracted"
+  temp_dir: "data/temp"
+  
+  # PyMuPDF settings
+  pymupdf:
+    extract_images: true
+    extract_tables: true
+    dpi: 300
+    image_format: "png"
+  
+  # Chandra OCR settings
+  chandra:
+    model_name: "datalab-to/chandra"
+    device: "cuda"  # ou "cpu"
+    batch_size: 4
+    prompt_type: "ocr_layout"  # préserve la mise en page
+    output_format: "markdown"  # ou "html", "json"
+    
+    # Quand utiliser Chandra
+    use_for_full_pages: false   # false = utiliser PyMuPDF d'abord
+    use_for_images: true        # true = analyser images extraites
+    use_for_scanned: true       # true = si PDF scanné détecté
+    use_for_complex_layout: true # true = si mise en page complexe
+  
+  # Preprocessing
+  preprocessing:
+    remove_headers_footers: true
+    normalize_whitespace: true
+    merge_hyphenated_words: true
+    extract_urls: true
+    extract_emails: true

@@ -1,0 +1,12 @@
+.followers__container {
+    width: 50%;
+}
+
+.followers__container p.first {
+    font-size: 2.5rem;
+}
+
+.followers__container p.second {
+    margin-bottom: 1rem;
+    padding: 0 10px;
+}

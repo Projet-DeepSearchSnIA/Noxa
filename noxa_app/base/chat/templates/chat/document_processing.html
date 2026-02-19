@@ -1,0 +1,309 @@
+{% extends 'main.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+{% endblock extra_css %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="mb-4">
+                <i class="fas fa-file-pdf text-primary"></i> Traitement de Documents RAG
+            </h1>
+            <p class="text-muted">Gérez le pipeline complet : Extraction OCR → Découpage (Chunking) → Indexation
+                Pinecone.</p>
+        </div>
+    </div>
+
+    <!-- Statistiques -->
+    <div class="row mb-5">
+        <div class="col-md-3">
+            <div class="card text-center border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <h3 class="text-primary" id="stat-raw">{{ stats.raw_pdfs }}</h3>
+                    <p class="mb-0 text-muted">PDFs bruts</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <h3 class="text-success" id="stat-extracted">{{ stats.extracted_docs }}</h3>
+                    <p class="mb-0 text-muted">Docs extraits (JSON)</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <h3 class="text-info" id="stat-chunked">{{ stats.chunked_docs }}</h3>
+                    <p class="mb-0 text-muted">Docs découpés (JSON)</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <button class="btn btn-sm btn-outline-secondary" onclick="refreshStats()">
+                        <i class="fas fa-sync-alt"></i> Actualiser
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Upload Form -->
+        <div class="col-md-6 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0 font-weight-bold">Uploader et Traiter un PDF</h5>
+                </div>
+                <div class="card-body">
+                    <form id="upload-form" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="form-group mb-3">
+                            <label for="pdf_file" class="form-label">Fichier PDF</label>
+                            <input type="file" class="form-control" id="pdf_file" name="pdf_file" accept=".pdf"
+                                required>
+                        </div>
+
+                        <div class="accordion mb-3" id="metadataAccordion">
+                            <div class="card">
+                                <div class="card-header p-0" id="headingOne">
+                                    <button class="btn btn-link btn-block text-left py-2" type="button"
+                                        data-toggle="collapse" data-target="#collapseOne">
+                                        Métadonnées optionnelles <i class="fas fa-chevron-down float-right mt-1"></i>
+                                    </button>
+                                </div>
+                                <div id="collapseOne" class="collapse" data-parent="#metadataAccordion">
+                                    <div class="card-body">
+                                        <div class="form-group mb-2">
+                                            <input type="text" class="form-control form-control-sm" name="title"
+                                                placeholder="Titre du document">
+                                        </div>
+                                        <div class="form-group mb-2">
+                                            <input type="text" class="form-control form-control-sm" name="author"
+                                                placeholder="Auteur(s) (séparés par des virgules)">
+                                        </div>
+                                        <div class="form-group mb-2">
+                                            <input type="text" class="form-control form-control-sm" name="subject"
+                                                placeholder="Sujet">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" name="upload_to_pinecone"
+                                id="upload_to_pinecone" checked>
+                            <label class="form-check-label" for="upload_to_pinecone">
+                                Indexer dans Pinecone immédiatement
+                            </label>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-block py-2" id="btn-upload">
+                            <i class="fas fa-magic"></i> Lancer le Traitement
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions globales -->
+        <div class="col-md-6 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0 font-weight-bold">Actions de Masse</h5>
+                </div>
+                <div class="card-body">
+                    <p class="small text-muted mb-4">Traitez tous les fichiers PDF déjà présents dans le dossier
+                        <code>data/raw</code>.</p>
+
+                    <button class="btn btn-info btn-block py-2 mb-3" onclick="processAllDocuments()">
+                        <i class="fas fa-layer-group"></i> Traiter Tous les Fichiers Existants
+                    </button>
+
+                    <div id="batch-progress" class="mt-4 d-none">
+                        <h6>Progression globale</h6>
+                        <div class="progress mb-2 h-20">
+                            <div id="batch-bar" class="progress-bar progress-bar-striped progress-bar-animated bg-info"
+                                role="progressbar" style="width: 0%"></div>
+                        </div>
+                        <p id="batch-status" class="small text-muted">Initialisation...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Logs et résultats -->
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-terminal mr-2"></i> Logs de Traitement</h5>
+                    <button class="btn btn-sm btn-outline-light" onclick="clearLogs()">Effacer</button>
+                </div>
+                <div class="card-body bg-light">
+                    <div id="log-container"
+                        style="height: 300px; overflow-y: auto; font-family: 'Courier New', Courier, monospace;"
+                        class="p-3 border rounded bg-white">
+                        <div class="text-muted">En attente d'une action...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .progress.h-20 {
+        height: 20px;
+    }
+
+    #log-container div {
+        border-bottom: 1px solid #f8f9fa;
+        padding: 4px 0;
+        font-size: 13px;
+    }
+
+    .log-success {
+        color: #28a745;
+        border-left: 3px solid #28a745;
+        padding-left: 8px !important;
+    }
+
+    .log-error {
+        color: #dc3545;
+        border-left: 3px solid #dc3545;
+        padding-left: 8px !important;
+    }
+
+    .log-info {
+        color: #17a2b8;
+        border-left: 3px solid #17a2b8;
+        padding-left: 8px !important;
+    }
+
+    .log-warning {
+        color: #ffc107;
+        border-left: 3px solid #ffc107;
+        padding-left: 8px !important;
+    }
+</style>
+
+<script>
+    function addLog(message, type = 'info') {
+        const container = document.getElementById('log-container');
+        const entry = document.createElement('div');
+        entry.className = `log-${type}`;
+        const time = new Date().toLocaleTimeString();
+        entry.innerHTML = `<strong>[${time}]</strong> ${message}`;
+        container.appendChild(entry);
+        container.scrollTop = container.scrollHeight;
+    }
+
+    function clearLogs() {
+        document.getElementById('log-container').innerHTML = '<div class="text-muted">Logs effacés.</div>';
+    }
+
+    function refreshStats() {
+        fetch("{% url 'chat:processing_status' %}")
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('stat-raw').innerText = data.stats.raw_pdfs;
+                    document.getElementById('stat-extracted').innerText = data.stats.extracted_docs;
+                    document.getElementById('stat-chunked').innerText = data.stats.chunked_docs;
+                }
+            });
+    }
+
+    document.getElementById('upload-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+        const btn = document.getElementById('btn-upload');
+        const formData = new FormData(this);
+
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Traitement en cours...';
+
+        addLog(`Début du traitement du fichier: ${document.getElementById('pdf_file').files[0].name}`, 'info');
+
+        fetch("{% url 'chat:upload_pdf' %}", {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+        })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    const s = data.stats;
+                    addLog(`✓ Extraction réussie: ${s.extraction.pages} pages, ${s.extraction.text_blocks} blocs.`, 'success');
+                    addLog(`✓ Chunking réussi: ${s.chunking.total_chunks} chunks créés.`, 'success');
+                    if (s.upload) {
+                        addLog(`✓ Pinecone: ${s.upload.uploaded} chunks indexés.`, 'success');
+                    }
+                    addLog(`Pipeline terminé avec succès en ${s.extraction.processing_time.toFixed(1)}s`, 'success');
+                    refreshStats();
+                } else {
+                    addLog(`ERREUR: ${data.error}`, 'error');
+                }
+            })
+            .catch(err => {
+                addLog(`ERREUR FATALE: ${err.message}`, 'error');
+            })
+            .finally(() => {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-magic"></i> Lancer le Traitement';
+            });
+    });
+
+    function processAllDocuments() {
+        if (!confirm("Voulez-vous vraiment lancer le traitement de tous les documents locaux ?")) return;
+
+        const prog = document.getElementById('batch-progress');
+        const bar = document.getElementById('batch-bar');
+        const status = document.getElementById('batch-status');
+
+        prog.classList.remove('d-none');
+        bar.style.width = '10%';
+        status.innerText = "Traitement du lot démarré...";
+        addLog("Lancement du traitement par lot des documents locaux...", 'warning');
+
+        fetch("{% url 'chat:process_all_pdfs' %}", {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+        })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    bar.style.width = '100%';
+                    status.innerText = `Terminé! ${data.success_count}/${data.total} documents traités.`;
+                    addLog(`✓ Batch terminé: ${data.success_count}/${data.total} documents réussis.`, 'success');
+                    refreshStats();
+                } else {
+                    status.innerText = "Une erreur est survenue.";
+                    addLog(`ERREUR BATCH: ${data.error}`, 'error');
+                }
+            })
+            .catch(err => {
+                addLog(`ERREUR BATCH FATALE: ${err.message}`, 'error');
+            });
+    }
+</script>
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.min.js"></script>
+{% endblock extra_js %}
+
+{% endblock content %}

@@ -1,0 +1,409 @@
+{% extends "main.html" %}
+{% load user_extras %}
+
+{% block title %}{{ subject.formated_name }}{% endblock %}
+
+{% block content %}
+<style>
+a {
+    text-decoration: none;
+}
+
+/* ---------- Scoped styles for subject detail ---------- */
+.sd-container{
+  max-width:1500px;
+  padding:24px;
+  grid-template-columns: 2.2fr 1fr;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  gap: 5rem;
+}
+@media (max-width:1000px){
+  .sd-container{ grid-template-columns:1fr; 
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 2rem;
+   }
+}
+
+.sd-card { background:#fff; border-radius:14px; padding:18px; box-shadow:0 8px 30px rgba(16,24,40,0.04); }
+
+/* Header */
+.sd-header { display:flex; justify-content:space-between; gap:12px; align-items:flex-start; flex-wrap:wrap; }
+.sd-title { font-size:1.35rem; font-weight:700; color:#0f172a; margin:0; line-height:1.05; }
+.sd-subtitle { color:#475569; font-size:0.95rem; margin-top:6px; }
+
+/* chips */
+.sd-chips { display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; }
+.sd-chip { background:#f1f5f9; color:#0f172a; padding:6px 10px; border-radius:999px; font-size:0.85rem; }
+
+/* top actions / correction add */
+.sd-top-actions { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-top:14px; }
+.sd-correction-count { font-weight:600; color:#0f172a; }
+.sd-add-btn { background:#2563eb; color:#fff; padding:8px 12px; border-radius:10px; border:none; cursor:pointer; font-weight:600; }
+
+/* inline upload area */
+.sd-upload { display:none; margin-top:12px; padding:12px; border-radius:12px; background:#f8fafc; border:1px solid #e6eef9; }
+.sd-upload input[type="file"] { display:block; margin-bottom:10px; }
+
+/* subject meta row */
+.sd-meta-row { display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin-top:10px; color:#64748b; font-size:0.9rem; }
+
+/* main content / description */
+.sd-desc { margin-top:14px; color:#334155; line-height:1.5; }
+
+/* corrections list */
+.sd-corrections { margin-top:18px; display:flex; flex-direction:column; gap:12px; }
+.corr-card { display:flex; gap:12px; align-items:flex-start; padding:12px; border-radius:12px; background:linear-gradient(180deg,#ffffff,#fbfdff); border:1px solid #eef2ff; box-shadow:0 6px 20px rgba(2,6,23,0.03); }
+.corr-left { width:56px; height:56px; border-radius:8px; background:#f1f5f9; display:flex; align-items:center; justify-content:center; font-weight:700; color:#0f172a; }
+.corr-body { flex:1; display:flex; flex-direction:column; gap:6px; }
+.corr-title-row { display:flex; justify-content:space-between; align-items:center; gap:12px; }
+.corr-title { font-weight:700; color:#0f172a; font-size:0.98rem; margin:0; }
+.corr-meta { color:#64748b; font-size:0.85rem; }
+.corr-actions { display:flex; gap:8px; align-items:center; }
+
+/* like button */
+.corr-like { background:#eef2ff; color:#2563eb; padding:6px 10px; border-radius:10px; text-decoration:none; font-weight:600; font-size:0.85rem; border:none; cursor:pointer; }
+.corr-view { text-decoration:none; padding:6px 10px; border-radius:10px; background:#0f172a; color:#fff; font-size:0.85rem; }
+
+/* comments block inside correction */
+.corr-comments { margin-top:8px; display:flex; flex-direction:column; gap:8px; }
+.comment { background:#fff; border-radius:10px; padding:10px; border:1px solid #f1f5f9; box-shadow:0 3px 10px rgba(2,6,23,0.02); }
+.comment-head { display:flex; justify-content:space-between; color:#475569; font-size:0.82rem; margin-bottom:6px; }
+.comment-body { color:#334155; font-size:0.92rem; }
+
+/* add comment form */
+.add-comment { display:flex; gap:8px; margin-top:8px; align-items:flex-start; }
+.add-comment textarea { flex:1; min-height:42px; resize:vertical; padding:8px; border-radius:8px; border:1px solid #e6eef9; font-size:0.93rem; }
+.add-comment button { background:#10b981; color:#fff; border:none; padding:8px 12px; border-radius:8px; cursor:pointer; font-weight:700; }
+
+/* SIDEBAR */
+.sd-sidebar .sd-card{
+  position:sticky;
+  top:20px;
+  align-self:start;
+}
+.sd-side-row { display:flex; flex-direction: row; gap: 15px; justify-content:space-between; align-items:center; margin-bottom:10px; color:#334155; }
+.sd-side-row small { color:#64748b; }
+
+aside {
+    min-width: 10%;
+    max-width: 35%;
+}
+
+aside .sd-card {
+    padding: 2rem;
+    font-size: 1.2rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+/* small helpers */
+.kv { color:#475569; font-weight:600; margin-right:6px; }
+.empty-note { color:#64748b; }
+
+/* ensure responsive small tweaks */
+@media (max-width:600px) {
+  .sd-header { flex-direction:column; align-items:flex-start; }
+  .sd-top-actions { flex-direction:column; align-items:flex-start; gap:8px; }
+  .corr-left { display:none; }
+}
+
+.sd-divider{
+  border:none;
+  border-top:1px solid #eef2ff;
+  margin:24px 0 14px 0;
+  padding: 1rem;
+}
+
+.sd-section-title{
+  font-size:1.15rem;
+  font-weight:800;
+  color:#0f172a;
+}
+
+.toggle-comments{
+  background:#f1f5f9;
+  border:1px solid #e6eef9;
+  padding:6px 10px;
+  border-radius:10px;
+  font-size:0.85rem;
+  cursor:pointer;
+  font-weight:600;
+  color:#0f172a;
+  margin-top:6px;
+}
+
+.toggle-comments:hover{
+  background:#e9efff;
+}
+
+.sd-sortbar{
+  display:flex;
+  gap:10px;
+  margin-bottom:12px;
+}
+
+.sd-sortbar a{
+  padding:6px 12px;
+  border-radius:10px;
+  background:#f1f5f9;
+  font-size:.85rem;
+  text-decoration:none;
+  font-weight:600;
+  color:#0f172a;
+}
+
+.sd-sortbar a.active{
+  background:#0f172a;
+  color:#fff;
+}
+
+.pinned-label{
+  font-size:0.75rem;
+  font-weight:700;
+  color:#f97316;
+  margin-bottom:4px;
+}
+
+.comments-pagination{
+  display:flex;
+  gap:8px;
+  margin-top:6px;
+}
+.comments-pagination a{
+  font-size:.8rem;
+  padding:4px 8px;
+  background:#f1f5f9;
+  border-radius:6px;
+  text-decoration:none;
+  font-weight:600;
+}
+
+</style>
+
+<div class="sd-container">
+
+  <!-- LEFT: main -->
+  <div>
+
+    <div class="sd-card">
+      <!-- header -->
+      <div class="sd-header">
+        <div>
+          <h1 class="sd-title">{{ subject.formated_name }}</h1>
+          <div class="sd-subtitle">
+            {% if subject.course %}{{ subject.course.label }}{% endif %}
+            {% if subject.class_field %} · {{ subject.class_field.label }}{% endif %}
+            {% if subject.academic_year %} · {{ subject.academic_year }}{% endif %}
+          </div>
+
+          <div class="sd-chips">
+            {% if subject.specialization %}<span class="sd-chip">{{ subject.specialization.label }}</span>{% endif %}
+            {% if subject.semester %}<span class="sd-chip">Semester {{ subject.semester }}</span>{% endif %}
+            <span class="sd-chip">Uploaded {{ subject.createdAt|timesince }} ago</span>
+          </div>
+        </div>
+
+        <div style="text-align:right; display: flex; flex-direction: row; justify-content: space-between;">
+          {% if subject.aws_url %}
+            <a href="{% url 'base:view_subject' subject.id %}" target="_blank" class="sd-add-btn" style="background:#0f172a; padding:10px 14px; margin-right: 10px;">Open subject</a>
+          {% endif %}
+          <div style="height:8px"></div>
+          {% if request.user.is_authenticated %}
+            <button id="topAddCorrectionBtn" class="sd-add-btn">+ Propose correction</button>
+          {% else %}
+            <a href="{% url 'base:login' %}" class="sd-add-btn">Login to propose</a>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- description -->
+      {% if subject.notes %}
+      <div class="sd-desc">
+        {{ subject.notes }}
+      </div>
+      {% endif %}
+
+      <!-- quick stats / link area -->
+      <div class="sd-top-actions">
+        <div>
+          <span class="sd-correction-count">Corrections: {{ corrections.count }}</span>
+          <span style="margin-left:10px; color:#64748b;">• Source: {{ subject.source|default:"—" }}</span>
+        </div>
+        <div style="color:#64748b; font-size:0.9rem;">
+          <span>Author: {% if subject.author %}<a href="{% url 'base:user-profile' subject.author.id %}">@{{ subject.author.username }}</a>{% else %}Anonymous{% endif %}</span>
+        </div>
+      </div>
+
+      <!-- INLINE upload form (toggle) -->
+      {% if request.user.is_authenticated %}
+      <form id="inlineUploadForm" method="POST" enctype="multipart/form-data" action="{% url 'base:add-correction' subject.id %}" class="sd-upload">
+        {% csrf_token %}
+        <label style="font-weight:600; color:#0f172a; display:block; margin-bottom:8px;">Upload correction (PDF)</label>
+        <input type="file" name="file" accept="application/pdf" required>
+        <div style="margin-top:8px;">
+          <button type="submit" class="sd-add-btn" style="background:#06b6d4;">Send correction</button>
+          <button type="button" id="cancelUpload" style="margin-left:8px; background:#ef4444; color:#fff; border:none; padding:8px 10px; border-radius:8px;">Cancel</button>
+        </div>
+      </form>
+      {% endif %}
+
+      <hr class="sd-divider">
+      <h2 class="sd-section-title">Corrections</h2>
+
+      <div class="sd-sortbar">
+        <a href="?sort=recent" class="{% if sort == 'recent' %}active{% endif %}">Most recent</a>
+        <a href="?sort=popular" class="{% if sort == 'popular' %}active{% endif %}">Most liked</a>
+      </div>
+
+
+      <!-- Corrections list -->
+      <div class="sd-corrections" id="correctionsList">
+        {% if corrections %}
+          {% for corr in corrections %}
+                {% if forloop.first and sort == "popular" %}
+                    <div class="pinned-label">🔥 Best correction</div>
+                {% endif %}
+
+          <div class="corr-card" id="corr-{{ corr.id }}">
+            <div class="corr-left">{{ corr.nb_likes }}</div>
+
+            <div class="corr-body">
+              <div class="corr-title-row">
+                <p class="corr-title">Correction #{{ forloop.counter }}</p>
+                <div class="corr-meta">
+                  {% if corr.author %}by <a href="{% url 'base:user-profile' corr.author.id %}">@{{ corr.author.username }}</a> · {% endif %}
+                  {{ corr.createdAt|timesince}} ago
+                </div>
+              </div>
+
+              <div class="corr-actions">
+                {% if corr.aws_url %}
+                  <a href="{% url 'base:view_correction' corr.id %}" target="_blank" class="corr-view">Open</a>
+                {% else %}
+                  <span class="empty-note">No file</span>
+                {% endif %}
+
+                <form method="POST" action="{% url 'base:like-correction' corr.id %}" style="display:inline;">
+                  {% csrf_token %}
+                  <button type="submit" class="corr-like">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="16" width="16" viewBox="0 0 24 24" fill="currentColor" style="margin-right:4px;">
+                        <path d="M1 21h4V9H1v12zM23 10c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 2 7.59 8.59C7.21 8.95 7 9.45 7 10v9c0 1.1.9 2 2 2h8c.82 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-1z"/>
+                    </svg> 
+                    Like
+                  </button>
+                </form>
+              </div>
+
+              <!-- comments -->
+              <button type="button" class="toggle-comments" data-target="comments-{{ corr.id }}">
+                Show comments ({{ corr.comments.count }})
+              </button>
+
+            <div class="corr-comments" id="comments-{{ corr.id }}" style="display:none;">
+                {% with comments=comments_map|get_item:corr.id %}
+                {% for comment in comments %}
+                    <div class="comment">
+                    <div class="comment-head">
+                        <div><strong>{% if comment.author %}{{ comment.author.username }}{% else %}Anonymous{% endif %}</strong></div>
+                        <div><small>{{ comment.createdAt|timesince}} ago</small></div>
+                    </div>
+                    <div class="comment-body">{{ comment.body }}</div>
+                    </div>
+                {% empty %}
+                <div class="empty-note">No comments yet</div>
+                {% endfor %}
+                {% endwith %}
+
+                <!-- add comment form -->
+                <form method="POST" action="{% url 'base:add-comment' corr.id %}" class="add-comment">
+                  {% csrf_token %}
+                  <textarea name="body" placeholder="Add a comment..." required></textarea>
+                  <button type="submit">Post</button>
+                </form>
+              </div>
+            </div>
+
+            <div class="comments-pagination">
+                {% if comments.has_previous %}
+                    <a href="?page_{{ corr.id }}={{ comments.previous_page_number }}">Prev</a>
+                {% endif %}
+
+                {% if comments.has_next %}
+                    <a href="?page_{{ corr.id }}={{ comments.next_page_number }}">Next</a>
+                {% endif %}
+            </div>
+
+
+          </div>
+          {% endfor %}
+        {% else %}
+          <div class="sd-card empty-note">No corrections yet. Be the first to propose one!</div>
+        {% endif %}
+      </div>
+
+    </div> <!-- sd-card -->
+
+  </div> <!-- left -->
+
+  <!-- RIGHT: sidebar -->
+  <aside class="sd-sidebar">
+    <div class="sd-card">
+      <div class="sd-side-row"><div class="kv">Course</div><small>{{ subject.course.label|default:"—" }}</small></div>
+      <div class="sd-side-row"><div class="kv">Class</div><small>{{ subject.class_field.label|default:"-" }}</small></div>
+      <div class="sd-side-row"><div class="kv">Academic year</div><small>{{ subject.academic_year|default:"—" }}</small></div>
+      <div class="sd-side-row"><div class="kv">Semester</div><small>{{ subject.semester|default:"—" }}</small></div>
+
+      <hr style="border:none;border-top:1px solid #eef2ff;margin:12px 0;">
+
+      <div style="font-size:0.95rem;color:#334155;margin-bottom:8px;">Quick actions</div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        {% if subject.aws_url %}
+        <a href="{{ subject.aws_url }}" target="_blank" class="sd-add-btn" style="background:#111827;text-align:center;">Open Subject PDF</a>
+        {% endif %}
+        {% if request.user.is_authenticated %}
+        <a href="#correctionsList" class="sd-add-btn" style="background:#06b6d4;text-align:center;">Jump to corrections</a>
+        {% endif %}
+      </div>
+    </div>
+  </aside>
+
+</div> <!-- container -->
+
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+  const addBtn = document.getElementById('topAddCorrectionBtn');
+  const uploadForm = document.getElementById('inlineUploadForm');
+  const cancelBtn = document.getElementById('cancelUpload');
+
+  if(addBtn && uploadForm){
+    addBtn.addEventListener('click', function(){
+      uploadForm.style.display = uploadForm.style.display === 'block' ? 'none' : 'block';
+      uploadForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+  }
+  if(cancelBtn && uploadForm){
+    cancelBtn.addEventListener('click', function(){ uploadForm.style.display = 'none'; });
+  }
+});
+
+/* Hide or show comment */
+document.querySelectorAll('.toggle-comments').forEach(btn => {
+  btn.addEventListener('click', function(){
+    const id = this.dataset.target;
+    const bloc = document.getElementById(id);
+
+    if(!bloc) return;
+
+    const isOpen = bloc.style.display === 'block';
+    bloc.style.display = isOpen ? 'none' : 'block';
+    this.textContent = isOpen ? this.textContent.replace('Hide', 'Show') : this.textContent.replace('Show', 'Hide');
+  });
+});
+
+</script>
+{% endblock %}

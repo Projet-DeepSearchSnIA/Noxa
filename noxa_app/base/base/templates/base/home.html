@@ -1,0 +1,1105 @@
+{% extends "home_template.html" %}
+
+{% load static %}
+
+{% block homecontent %}
+
+<style>
+    .filter-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem 2rem;
+        background: #f3f4f6;
+        border-bottom: 1px solid #e5e7eb;
+        margin-bottom: 2rem;
+    }
+
+    @media (max-width: 768px) {
+        .filter-container, .document-type-filters, .subjects-filters {
+            flex-direction: column;
+            gap: 1rem;
+        }
+    }
+
+    .document-type-filters {
+        display: flex;
+        gap: 1rem;
+    }
+
+    .subjects-filters {
+        display: flex;
+        gap: 1rem;
+    }
+
+    .filter-btn {
+        padding: 0.5rem 1rem;
+        background: white;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        text-decoration: none;
+        color: #374151;
+        font-weight: 500;
+        transition: all 0.2s;
+    }
+    .filter-btn.active, .filter-btn:hover {
+        background: #2563eb;
+        color: white;
+    }
+
+    .filter-select {
+        padding: 0.5rem 1rem;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        background: white;
+        color: #374151;
+        font-weight: 500;
+        transition: all 0.2s;
+    }
+    .filter-select:hover {
+        border-color: #2563eb;
+    }
+</style>
+
+
+<div class="home-container">
+    <div class="filter-container">
+        <div class="document-type-filters">
+            <a href="{% url 'base:home' %}" class="filter-btn {% if not request.GET.type %}active{% endif %}">All</a>
+            <a href="{% url 'base:home' %}?type=thesis" id="thesis-filter" class="filter-btn {% if request.GET.type == 'thesis' %}active{% endif %}">Thesis</a>
+            <a href="{% url 'base:home' %}?type=subjects" id="subjects-filter" class="filter-btn {% if request.GET.type == 'subjects' %}active{% endif %}">Subjects</a>
+        </div>
+        <div class="subjects-filters">
+            <!-- Filter by class, academic year, semester, course -->
+            <select id="class-filter" name="class_level" class="filter-select" required>
+                <option value="all">All Classes</option>
+                {% for class in classes %}
+                <option value="{{ class.name }}">{{ class.label }}</option>
+                {% endfor %}
+            </select>
+            <select id="year-filter" class="filter-select">
+                <option value="all">All Years</option>
+                {% for year in academic_years %}
+                <option value="{{ year }}">{{ year }}</option>
+                {% endfor %}
+            </select>
+            <select id="semester-filter" name="semester" class="filter-select">
+                <option value="all">All Semesters</option>
+                <option value="1" >Semester 1</option>
+                <option value="2">Semester 2</option>
+            </select>
+            <select id="course-filter" class="filter-select">
+                <option value="all">All Courses</option>
+                {% for course in courses %}
+                <option value="{{ course.id }}" >{{ course.label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+    {% if request.user.is_authenticated %}
+    <div class="welcome-banner" id="welcome-banner">
+        <div class="welcome-content">
+            <div class="welcome-text">
+                <h2>Welcome back, {{ request.user.username }}! </h2>
+                <p>Discover the latest research and publications from your community</p>
+            </div>
+            <button id="close-welcome-banner" aria-label="Close welcome banner">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        </div>
+    </div>
+{% endif %}
+    
+    <div class="content-wrapper">
+        <div class="main-content">
+            <div class="section-header for-pubs" id="section-pubs">
+                <h1>Recent Publications</h1>
+                <span class="count-badge">{{ pubs|length }} publication{{ pubs|length|pluralize }}</span>
+            </div>
+            
+            <div class="publications-list for-pubs">
+                {% for pub in pubs %}
+                <article class="pub-card">
+                    <div class="pub-header">
+                        <a href="{% url 'base:publication' pub.id %}" class="pub-title">
+                            {{ pub.theme }}
+                        </a>
+                        <a href="{% url 'base:pdf' pub.id %}" target="_blank" class="pdf-btn">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                            </svg>
+                            PDF
+                        </a>
+                    </div>
+                    
+                    <div class="pub-meta">
+                        <div class="authors">
+                            {% for author in pub.authors.all|slice:":3" %}
+                                <a href="{% url 'base:user-profile' author.id %}" class="author">
+                                    {% if author.photo %}
+                                    <img src="{{ author.photo.url }}" alt="{{ author.username }}">
+                                    {% else %}
+                                    <span class="avatar">{{ author.username|first|upper }}</span>
+                                    {% endif %}
+                                    <span>{{ author.username }}</span>
+                                </a>
+                            {% endfor %}
+                            {% if pub.authors.count > 3 %}
+                                <span class="more">+{{ pub.authors.count|add:"-3" }}</span>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="info">
+                            {% if pub.topic %}
+                            <a href="" class="topic">{{ pub.topic.name }}</a>
+                            {% endif %}
+                            <span class="time">{{ pub.created|timesince }} ago</span>
+                            {% if pub.page_count %}
+                            <span class="pages">{{ pub.page_count }} pages</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    {% if pub.description %}
+                    <p class="pub-desc">{{ pub.description|truncatewords:20 }}</p>
+                    {% endif %}
+                    
+                    {% if pub.tags.exists %}
+                    <div class="tags">
+                        {% for tag in pub.tags.all|slice:":4" %}
+                            <a href="{% url 'base:tag' tag.id %}" class="tag">#{{ tag.name }}</a>
+                        {% endfor %}
+                        {% if pub.tags.count > 4 %}
+                            <span class="tag-more">+{{ pub.tags.count|add:"-4" }}</span>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </article>
+                {% endfor %}
+                
+                {% if not pubs %}
+                <div class="empty-state">
+                    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                    </svg>
+                    <h3>No publications yet</h3>
+                    <p>Be the first to share your research</p>
+                    {% if request.user.is_authenticated %}
+                    <a href="{% url 'base:create-publication' %}" class="btn-primary">Publish Now</a>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="spacer" style="padding: 3rem;"></div>
+
+            <!-- Subjects-list -->
+            <div class="section-header for-subjects" id="section-subject">
+                <h1>Subjects</h1>
+                <span class="count-badge">{{ subjects|length }} publication{{ subjects|length|pluralize }}</span>
+            </div>
+
+            <div class="for-subjects subjects-list">
+                {% for subject in subjects %}
+                    <article class="subject-card">
+                        <div class="subject-header">
+                            <h3 class="subject-title">
+                                <a href="#">
+                                    {{ subject.name }}
+                                </a>
+                            </h3>
+                            <span class="subject-badge">
+                                {{ subject.corrections_count }} correction{{ subject.corrections_count|pluralize }}
+                            </span>
+                        </div>
+
+                        <div class="subject-meta">
+                            {% if subject.class_field %}
+                                <span class="meta-item">{{ subject.class_field.label }}</span>
+                            {% endif %}
+                            {% if subject.specialization %}
+                                <span class="meta-item">{{ subject.specialization.label }}</span>
+                            {% endif %}
+                            {% if subject.semester %}
+                                <span class="meta-item">S{{ subject.semester }}</span>
+                            {% endif %}
+                            {% if subject.academic_year %}
+                                <span class="meta-item">{{ subject.academic_year }}</span>
+                            {% endif %}
+                        </div>
+
+                        {% if subject.notes %}
+                        <p class="subject-desc">
+                            {{ subject.notes|truncatewords:18 }}
+                        </p>
+                        {% endif %}
+
+                        <div class="subject-actions">
+                            <a href="{% url 'base:view_subject' subject.id %}" target="_blank" class="btn-open">
+                                📄 View subject
+                            </a>
+                            <a href="#" class="btn-details">
+                                Details →
+                            </a>
+                        </div>
+                    </article>
+                {% endfor %}
+
+                {% if not subjects %}
+                <div class="empty-state">
+                    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                    </svg>
+                    <h3>No publications yet</h3>
+                    <p>Be the first to share a subject</p>
+                    {% if request.user.is_authenticated %}
+                    <a href="{% url 'base:baki' %}" class="btn-primary">Publish Now</a>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+:root {
+    --primary: #2563eb;
+    --primary-dark: #1e40af;
+    --secondary: #8b5cf6;
+    --danger: #ef4444;
+    --success: #10b981;
+    --text: #1f2937;
+    --text-light: #6b7280;
+    --text-muted: #9ca3af;
+    --bg: #ffffff;
+    --bg-secondary: #f9fafb;
+    --bg-tertiary: #f3f4f6;
+    --border: #e5e7eb;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.home-container {
+    min-height: calc(100vh - 70px);
+    background: var(--bg-secondary);
+}
+
+/* Welcome Banner */
+/* Remplacer les styles du welcome banner par : */
+.welcome-banner {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 1.5rem 2rem;
+    margin-bottom: 2rem;
+}
+
+.welcome-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 2rem;
+}
+
+.welcome-text {
+    flex: 1;
+}
+
+.welcome-content h2 {
+    color: white;
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.welcome-content p {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 1rem;
+    margin: 0;
+}
+
+#close-welcome-banner {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    padding: 0.5rem;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+#close-welcome-banner:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.05);
+}
+
+@media (max-width: 768px) {
+    .welcome-banner {
+        padding: 1.25rem 1.5rem;
+    }
+    
+    .welcome-content {
+        gap: 1rem;
+    }
+    
+    .welcome-content h2 {
+        font-size: 1.4rem;
+    }
+    
+    .welcome-content p {
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .welcome-banner {
+        padding: 1rem;
+    }
+    
+    .welcome-content {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: flex-start;
+    }
+    
+    #close-welcome-banner {
+        align-self: flex-end;
+        margin-top: -2.5rem;
+    }
+}
+
+/* Content Wrapper */
+.content-wrapper {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1.5rem 3rem;
+}
+
+.main-content {
+    background: var(--bg);
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+/* Section Header */
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--bg-secondary);
+}
+
+.section-header h1 {
+    font-size: 1.875rem;
+    font-weight: 800;
+    color: var(--text);
+}
+
+.count-badge {
+    padding: 0.5rem 1rem;
+    background: var(--bg-secondary);
+    border-radius: 20px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-light);
+}
+
+/* Publications List */
+.publications-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+/* Publication Card */
+.pub-card {
+    padding: 1.5rem;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    transition: all 0.2s;
+}
+
+.pub-card:hover {
+    border-color: var(--primary);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.1);
+    transform: translateY(-2px);
+}
+
+/* Publication Header */
+.pub-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.pub-title {
+    flex: 1;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text);
+    text-decoration: none;
+    line-height: 1.4;
+    transition: color 0.2s;
+}
+
+.pub-title:hover {
+    color: var(--primary);
+}
+
+.pdf-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.5rem 0.875rem;
+    background: var(--danger);
+    color: white;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.pdf-btn:hover {
+    background: #dc2626;
+    transform: scale(1.05);
+}
+
+/* Publication Meta */
+.pub-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.authors {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.author {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    color: var(--text);
+    font-size: 0.9375rem;
+    font-weight: 500;
+    transition: color 0.2s;
+}
+
+.author:hover {
+    color: var(--primary);
+}
+
+.author img,
+.author .avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.avatar {
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.more {
+    padding: 0.25rem 0.625rem;
+    background: var(--bg-tertiary);
+    color: var(--text-light);
+    border-radius: 12px;
+    font-size: 0.8125rem;
+    font-weight: 600;
+}
+
+.info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-size: 0.875rem;
+    color: var(--text-light);
+}
+
+.topic {
+    padding: 0.25rem 0.75rem;
+    background: var(--secondary);
+    color: white;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.8125rem;
+    transition: all 0.2s;
+}
+
+.topic:hover {
+    background: #7c3aed;
+}
+
+.time,
+.pages {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+/* Description */
+.pub-desc {
+    color: var(--text-light);
+    line-height: 1.6;
+    margin-bottom: 1rem;
+    font-size: 0.9375rem;
+}
+
+/* Tags */
+.tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.tag {
+    padding: 0.375rem 0.75rem;
+    background: var(--bg-secondary);
+    color: var(--text);
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.tag:hover {
+    background: var(--primary);
+    color: white;
+}
+
+.tag-more {
+    padding: 0.375rem 0.75rem;
+    background: var(--bg-tertiary);
+    color: var(--text-muted);
+    border-radius: 6px;
+    font-size: 0.8125rem;
+    font-weight: 600;
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+}
+
+.empty-state svg {
+    color: var(--text-muted);
+    opacity: 0.3;
+    margin-bottom: 1.5rem;
+}
+
+.empty-state h3 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 0.5rem;
+}
+
+.empty-state p {
+    color: var(--text-light);
+    margin-bottom: 2rem;
+}
+
+.btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background: var(--primary);
+    color: white;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+.btn-primary:hover {
+    background: var(--primary-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.pub-card {
+    animation: fadeIn 0.4s ease-out backwards;
+}
+
+.pub-card:nth-child(1) { animation-delay: 0.05s; }
+.pub-card:nth-child(2) { animation-delay: 0.1s; }
+.pub-card:nth-child(3) { animation-delay: 0.15s; }
+.pub-card:nth-child(4) { animation-delay: 0.2s; }
+.pub-card:nth-child(5) { animation-delay: 0.25s; }
+.pub-card:nth-child(6) { animation-delay: 0.3s; }
+.pub-card:nth-child(7) { animation-delay: 0.35s; }
+.pub-card:nth-child(8) { animation-delay: 0.4s; }
+
+/* Responsive */
+@media (max-width: 768px) {
+    .welcome-banner {
+        padding: 1.5rem 1rem;
+    }
+    
+    .welcome-content h2 {
+        font-size: 1.5rem;
+    }
+    
+    .welcome-content p {
+        font-size: 0.9375rem;
+    }
+    
+    .content-wrapper {
+        padding: 0 1rem 2rem;
+    }
+    
+    .main-content {
+        padding: 1.5rem;
+    }
+    
+    .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+    
+    .section-header h1 {
+        font-size: 1.5rem;
+    }
+    
+    .pub-card {
+        padding: 1.25rem;
+    }
+    
+    .pub-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .pub-title {
+        font-size: 1.125rem;
+    }
+    
+    .pub-meta {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .info {
+        flex-wrap: wrap;
+    }
+}
+
+@media (max-width: 480px) {
+    .welcome-banner {
+        padding: 1.25rem 0.75rem;
+    }
+    
+    .content-wrapper {
+        padding: 0 0.75rem 1.5rem;
+    }
+    
+    .main-content {
+        padding: 1.25rem;
+        border-radius: 12px;
+    }
+    
+    .section-header h1 {
+        font-size: 1.375rem;
+    }
+    
+    .pub-card {
+        padding: 1rem;
+    }
+    
+    .authors {
+        gap: 0.75rem;
+    }
+    
+    .author {
+        font-size: 0.875rem;
+    }
+    
+    .info {
+        gap: 0.75rem;
+        font-size: 0.8125rem;
+    }
+}
+
+/* style for subject card */
+/* Subject cards */
+.subject-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 1.3rem;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.03);
+    transition: transform .15s ease, box-shadow .15s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.subject-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 35px rgba(0,0,0,0.06);
+}
+
+.subject-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    gap: 1rem;
+}
+
+.subject-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.subject-title a {
+    text-decoration: none;
+    color: inherit;
+}
+
+.subject-badge {
+    background: #eff6ff;
+    color: #2563eb;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: .8rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.subject-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .4rem;
+}
+
+.meta-item {
+    background: #f4f4f5;
+    border-radius: 12px;
+    padding: 3px 10px;
+    font-size: .8rem;
+    color: #52525b;
+}
+
+.subject-desc {
+    font-size: .9rem;
+    color: #555;
+    line-height: 1.4;
+}
+
+.subject-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: .5rem;
+    gap: .5rem;
+}
+
+.btn-open,
+.btn-details {
+    font-size: .85rem;
+    font-weight: 600;
+    text-decoration: none;
+    padding: .45rem .8rem;
+    border-radius: 10px;
+    transition: all .15s ease;
+}
+
+.btn-open {
+    background: #e0f2fe;
+    color: #0369a1;
+}
+
+.btn-open:hover {
+    background: #bae6fd;
+}
+
+.btn-details {
+    color: #2563eb;
+}
+
+.btn-details:hover {
+    text-decoration: underline;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+    .subject-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .subject-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
+
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const closeBtn = document.getElementById('close-welcome-banner');
+    const banner = document.getElementById('welcome-banner');
+
+    if (closeBtn && banner) {
+        closeBtn.addEventListener('click', function() {
+            banner.style.display = 'none';
+        });
+    }
+});
+
+/* display subject filters only when 'subjects' type is selected */
+document.addEventListener('DOMContentLoaded', function() {
+    const subjectsFilterBtn = document.getElementById('subjects-filter');
+    const classFilter = document.getElementById('class-filter');
+    const yearFilter = document.getElementById('year-filter');
+    const semesterFilter = document.getElementById('semester-filter');
+    const courseFilter = document.getElementById('course-filter');
+    const subjectsContainer = document.querySelector('.subjects-list');
+
+    function toggleSubjectFilters() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const type = urlParams.get('type');
+
+        if (type === 'subjects') {
+            classFilter.style.display = 'inline-block';
+            yearFilter.style.display = 'inline-block';
+            semesterFilter.style.display = 'inline-block';
+            courseFilter.style.display = 'inline-block';
+
+            // display to none all elements having "for-pubs" in their class attribut
+            document.querySelectorAll('.for-pubs').forEach(el => {
+                el.style.display = 'none';
+            });
+
+            document.querySelectorAll('.spacer').forEach(el => {
+                el.style.display = 'none';
+            });
+
+            // scroll to the element with id=section-subject
+            // document.getElementById('section-subject')?.scrollIntoView({
+              //  behavior: 'smooth',
+              //  block: 'start'
+           // });
+            
+        } else {
+            classFilter.style.display = 'none';
+            yearFilter.style.display = 'none';
+            semesterFilter.style.display = 'none';
+            courseFilter.style.display = 'none';
+
+            if(type === 'thesis'){
+                document.querySelectorAll('.for-subjects').forEach(el => {
+                el.style.display = 'none';
+            });
+            document.querySelectorAll('.spacer').forEach(el => {
+                el.style.display = 'none';
+            });
+            }
+
+            // scroll to the element with id=section-pubs
+           // document.getElementById('section-pubs')?.scrollIntoView({
+           //     behavior: 'smooth',
+           //     block: 'start'
+           // });
+        }
+    }
+
+    /* filter courses based on class, semester */
+    function updateSelect(selectElem, items, defaultText){
+       selectElem.innerHTML = `<option value="all">${defaultText}</option>`;
+        items.forEach(item => {
+            const option = document.createElement('option');
+            option.value = item.name;
+            option.textContent = item.label;
+            selectElem.appendChild(option);
+        });
+    }
+
+    function renderSubjects(subjects) {
+        subjectsContainer.innerHTML = '';
+
+        if (!subjects || subjects.length === 0) {
+            subjectsContainer.innerHTML = `
+                <div class="empty-state">
+                    <h3>No subjects found</h3>
+                    <p>Try changing filters</p>
+                </div>
+            `;
+            return;
+        }
+
+        const fragment = document.createDocumentFragment();
+
+        subjects.forEach(s => {
+            const card = document.createElement('article');
+            card.className = 'subject-card';
+
+            const authorPhoto = s.author && s.author.photo_url
+                ? `<img src="${s.author.photo_url}" alt="${escapeHtml(s.author.username)}">`
+                : `<span class="avatar">${(s.author?.username || '?')[0].toUpperCase()}</span>`;
+
+            card.innerHTML = `
+                    <!-- Title -->
+                    <div class="subject-header">
+                        <h3 class="subject-title">
+                            <a href="/subjects/${s.id}/">
+                                ${escapeHtml(s.formated_name || s.name)}
+                            </a>
+                        </h3>
+
+                        <span class="subject-badge">
+                            ${s.corrections_count} correction${s.corrections_count !== 1 ? 's' : ''}
+                        </span>
+                    </div>
+
+                    <!-- Class / specialization / semester / year -->
+                    <div class="subject-meta">
+                        ${s.class_label ? `<span class="meta-item">${escapeHtml(s.class_label)}</span>` : ''}
+                        ${s.specialization_label ? `<span class="meta-item">${escapeHtml(s.specialization_label)}</span>` : ''}
+                        ${s.semester ? `<span class="meta-item">Semester ${escapeHtml(s.semester)}</span>` : ''}
+                        ${s.academic_year ? `<span class="meta-item">${escapeHtml(s.academic_year)}</span>` : ''}
+                    </div>
+
+                  <!-- Author + course + date (same line) -->
+                    <div class="author-line" style="display:flex; justify-content:space-between; align-items:center; margin-top:6px; gap:10px;">
+
+                        <!-- Left: Author -->
+                        <div class="authors" style="display:flex; align-items:center; gap:6px;">
+                            ${s.author ? `
+                                <a href="/profile/${s.author.id}/" class="author" style="display:flex; align-items:center; gap:6px;">
+                                    ${authorPhoto}
+                                    <span>${escapeHtml(s.author.username)}</span>
+                                </a>
+                            ` : ''}
+                        </div>
+
+                        <!-- Right: Course + date -->
+                        <div class="pub-meta" style="display:flex; align-items:center; gap:10px; font-size:0.85em; opacity:0.85;">
+                            ${s.course ? `<span class="topic">${escapeHtml(s.course.label)}</span>` : ''}
+                            ${s.created_at_human ? `<span class="time">${escapeHtml(s.created_at_human)} ago</span>` : ''}
+                        </div>
+
+                    </div>
+
+                    <!-- Description -->
+                    <p class="subject-desc">
+                        ${escapeHtml(truncate(s.notes || '', 100))}
+                    </p>
+
+                    <!-- Footer -->
+                    <div class="subject-footer">
+                        ${s.aws_url ? `<a href="${s.aws_url}" target="_blank" class="btn-open">📄 View</a>` : ''}
+                        <a href="/subjects/${s.id}/" class="btn-details">Details →</a>
+                    </div>
+                `;
+
+            fragment.appendChild(card);
+        });
+
+        subjectsContainer.appendChild(fragment);
+    }
+    // basic escape helper
+    function escapeHtml(str) {
+        return String(str)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    function truncate(text, max) {
+        if (text.length <= max) return text;
+        return text.slice(0, max).trim() + '…';
+    }
+
+    function fetchCoursesandSubjects(){
+        const classLevel =  classFilter.value;
+        const semester =  semesterFilter.value;
+
+        const params = new URLSearchParams({
+            class_level: classLevel,
+            semester: semester
+        });
+
+        fetch(`/ajax/filter-courses-subjects/?${params}`)
+            .then(response => response.json())
+            .then(data => {
+                // update courses select
+                updateSelect(courseFilter, data.courses || [], 'All Courses');
+                // update subjects list
+                renderSubjects(data.subjects || []);
+            })
+            .catch(error => {
+                console.error('Error fetching courses:', error);
+            });
+    }
+
+    toggleSubjectFilters();
+    fetchCoursesandSubjects();
+
+   if(classFilter) classFilter.addEventListener('change', fetchCoursesandSubjects);
+   if(semesterFilter) semesterFilter.addEventListener('change', fetchCoursesandSubjects);
+
+});
+</script>
+
+{% endblock homecontent %}

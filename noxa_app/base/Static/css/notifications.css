@@ -1,0 +1,123 @@
+/* notifications.css */
+/*********************************************************************************************/
+.notifications__container {
+    width: 55%;
+    margin: 2rem auto;
+    padding: 2rem;
+    background: #ffffff;
+    position: relative; /* For notification indicator positioning */
+}
+
+.notifications__container h1 {
+    color: var(--black);
+    font-size: 3rem;
+    font-weight: 700;
+    margin-bottom: 2rem;
+    text-align: left;
+    width: 100%;
+}
+
+.notifications__container--content__follower {
+    padding: 9px 15px;
+    border-radius: 3px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 15px;
+    position: relative; /* For notification indicator */
+    text-decoration: none;
+    color: inherit;
+}
+
+.notifications__container--content__follower:hover {
+    background: var(--light-card-hover);
+}
+
+.notifications__container--content__follower--photo {
+    width: 50px;
+    height: 50px;
+    margin-right: 10px;
+    flex-shrink: 0; /* Prevent photo from shrinking */
+}
+
+.notifications__container--content__follower--photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+.notifications__container--content__follower--text {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    flex: 1; /* Take remaining space */
+    min-width: 0; /* Allow shrinking below content size */
+}
+
+/* Apply ellipsis to both title and message */
+.notifications__container--content__follower--text strong {
+    font-size: 1.2rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+    display: block;
+}
+
+.notifications__container--content__follower--text p {
+    font-size: 1rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+    margin: 0;
+}
+
+.notifications__container--content__follower--item {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.notifications__container--content__follower--item.first {
+    flex: 1; /* Take most of the space */
+    min-width: 0; /* Allow shrinking */
+}
+
+.notifications__container--content__follower--item.second {
+    flex-shrink: 0; /* Don't shrink the time */
+    margin-left: 15px;
+}
+
+.notifications__container--content__follower--item.second p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: #666;
+    white-space: nowrap;
+}
+
+/* Notification indicator styles */
+.notifications_notification-indicator {
+    position: absolute;
+    left: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 8px;
+    height: 8px;
+    background-color: #dc3545;
+    border-radius: 50%;
+    z-index: 1;
+}
+
+/* Unread notification styling */
+.notification.unread {
+    background-color: #f8f9fc;
+}
+
+/* Add padding-left when there's an indicator */
+.notification.unread .notifications__container--content__follower--item.first {
+    padding-left: 20px;
+}

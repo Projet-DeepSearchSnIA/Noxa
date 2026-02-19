@@ -1,0 +1,192 @@
+{% extends "search_template.html" %}
+
+{% load static %}
+
+{% block searchcontent %}
+
+{% if search_results.publications %}
+<div class="search-section">
+    <h3 class="search-section__title">Publications</h3>
+    <div class="search-section__content">
+        {% for pub in search_results.publications %}
+        <div class="search-item publication-item">
+            <div class="publication-item__header">
+                <a class="publication-item__title" href="{% url 'base:publication' pub.id %}?from=search&q={{ q }}&tab={{ active_tab }}">{{ pub.theme }}</a>
+                <a class="publication-item__pdf" href="{% url 'base:pdf' pub.id %}?from=search&q={{ q }}&tab={{ active_tab }}" target="_blank">PDF</a>
+            </div>
+            <div class="publication-item__authors">
+                {% for author in pub.authors.all %}
+                    <a class="author-link" href="{% url 'base:user-profile' author.id %}?from=search&q={{ q }}&tab={{ active_tab }}">{{ author.username }}</a>{% if not forloop.last %}, {% endif %}
+                {% endfor %}
+            </div>
+            {% if pub.description %}
+            <p class="publication-item__description">{{ pub.description|truncatewords:20 }}</p>
+            {% endif %}
+            <div class="publication-item__meta">
+                {% if pub.topic %}
+                <span class="meta-item">{{ pub.topic.name }}</span>
+                {% endif %}
+                <span class="meta-item">{{ pub.created|timesince }} ago</span>
+                {% if pub.page_count %}
+                <span class="meta-item">{{ pub.page_count }} pages</span>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+{% if search_results.authors %}
+<div class="search-section">
+    <h3 class="search-section__title">Authors</h3>
+    <div class="search-section__content">
+        {% for author in search_results.authors %}
+        <div class="search-item author-item">
+            <div class="author-item__profile">
+                <div class="author-item__avatar">
+                    {% if author.photo %}
+                    <img src="{{ author.photo.url }}" alt="{{ author.username }}" />
+                    {% else %}
+                    <div class="avatar-placeholder">{{ author.username|first|upper }}</div>
+                    {% endif %}
+                </div>
+                <div class="author-item__info">
+                    <a href="{% url 'base:user-profile' author.id %}?from=search&q={{ q }}&tab={{ active_tab }}" class="author-item__name">{{ author.username }}</a>
+                    {% if author.first_name or author.last_name %}
+                    <p class="author-item__fullname">{{ author.first_name }} {{ author.last_name }}</p>
+                    {% endif %}
+                    {% if author.school %}
+                    <p class="author-item__school">{{ author.school }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="author-item__stats">
+                <span class="stat-item">{{ author.pub_authored.count }} publications</span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+{% if search_results.collections %}
+<div class="search-section">
+    <h3 class="search-section__title">Collections</h3>
+    <div class="search-section__content">
+        {% for collection in search_results.collections %}
+        <div class="search-item collection-item">
+            <div class="collection-item__header">
+                <a href="{% url 'base:collection' collection.user.id collection.id %}?from=search&q={{ q }}&tab={{ active_tab }}" class="collection-item__name">
+                    {{ collection.name }}
+                </a>
+                {% if request.user.id == collection.user.id %}
+                <button class="collection-item__delete" data-collection-id="{{ collection.id }}">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                    </svg>
+                </button>
+                {% endif %}
+            </div>
+            <div class="collection-item__info">
+                <span class="collection-item__count">{{ collection.publications.count }} publications</span>
+                <span class="collection-item__owner">by {{ collection.user.username }}</span>
+            </div>
+            <div class="collection-item__meta">
+                <span class="meta-item">Created {{ collection.created|timesince }} ago</span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+{% if search_results.discussions %}
+<div class="search-section">
+    <h3 class="search-section__title">Discussions</h3>
+    <div class="search-section__content">
+        {% for discussion in search_results.discussions %}
+        <div class="search-item discussion-item">
+            <div class="discussion-item__header">
+                <a href="{% url 'base:discussion' discussion.id %}?from=search&q={{ q }}&tab={{ active_tab }}" class="discussion-item__title">
+                    {{ discussion.title }}
+                </a>
+            </div>
+            {% if discussion.description %}
+            <p class="discussion-item__description">{{ discussion.description|truncatewords:15 }}</p>
+            {% endif %}
+            <div class="discussion-item__info">
+                <span class="discussion-item__creator">
+                    Started by <a href="{% url 'base:user-profile' discussion.creator.id %}?from=search&q={{ q }}&tab={{ active_tab }}" class="user-link">{{ discussion.creator.username }}</a>
+                    {% if discussion.creator in discussion.publication.authors.all %}
+                    <span class="creator-badge">author</span>
+                    {% endif %}
+                </span>
+            </div>
+            <div class="discussion-item__meta">
+                <span class="meta-item">About: <a href="{% url 'base:publication' discussion.publication.id %}?from=search&q={{ q }}&tab={{ active_tab }}" class="publication-link">{{ discussion.publication.theme|truncatewords:5 }}</a></span>
+                <span class="meta-item">{{ discussion.participants.count }} participants</span>
+                <span class="meta-item">{{ discussion.updated|timesince }} ago</span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+{% if search_results.profiles %}
+<div class="search-section">
+    <h3 class="search-section__title">Profiles</h3>
+    <div class="search-section__content">
+        {% for profile in search_results.profiles %}
+        <div class="search-item profile-item">
+            <div class="profile-item__main">
+                <div class="profile-item__avatar">
+                    {% if profile.photo %}
+                    <img src="{{ profile.photo.url }}" alt="{{ profile.username }}" />
+                    {% else %}
+                    <div class="avatar-placeholder">{{ profile.username|first|upper }}</div>
+                    {% endif %}
+                </div>
+                <div class="profile-item__info">
+                    <a href="{% url 'base:user-profile' profile.id %}?from=search&q={{ q }}&tab={{ active_tab }}" class="profile-item__username">{{ profile.username }}</a>
+                    {% if profile.first_name or profile.last_name %}
+                    <p class="profile-item__fullname">{{ profile.first_name }} {{ profile.last_name }}</p>
+                    {% endif %}
+                    {% if profile.school %}
+                    <p class="profile-item__school">{{ profile.school }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="profile-item__stats">
+                {% if profile.pub_authored.count > 0 %}
+                <span class="stat-item">{{ profile.pub_authored.count }} publications</span>
+                {% endif %}
+                <span class="stat-item">Joined {{ profile.date_joined|timesince }} ago</span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+{% if search_results.tags %}
+<div class="search-section">
+    <h3 class="search-section__title">Tags</h3>
+    <div class="search-section__content">
+        {% for tag in search_results.tags %}
+        <div class="search-item tag-item">
+            <div class="tag-item__name">
+                <a href="" class="tag-link">{{ tag.name }}</a>
+            </div>
+            <div class="tag-item__meta">
+                <span class="meta-item">{{ tag.publications.count }} publications</span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+
+{% endblock searchcontent %}

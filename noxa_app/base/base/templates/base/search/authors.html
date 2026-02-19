@@ -1,0 +1,41 @@
+{% extends "search_template.html" %}
+
+{% load static %}
+
+{% block searchcontent %}
+
+{% if search_results %}
+<div class="search-section">
+    <h3 class="search-section__title">Authors</h3>
+    <div class="search-section__content">
+        {% for author in search_results %}
+        <div class="search-item author-item">
+            <div class="author-item__profile">
+                <div class="author-item__avatar">
+                    {% if author.photo %}
+                    <img src="{{ author.photo.url }}" alt="{{ author.username }}" />
+                    {% else %}
+                    <div class="avatar-placeholder">{{ author.username|first|upper }}</div>
+                    {% endif %}
+                </div>
+                <div class="author-item__info">
+                    <a href="{% url 'base:user-profile' author.id %}?from=search&q={{ q }}&tab={{ active_tab }}" class="author-item__name">{{ author.username }}</a>
+                    {% if author.first_name or author.last_name %}
+                    <p class="author-item__fullname">{{ author.first_name }} {{ author.last_name }}</p>
+                    {% endif %}
+                    {% if author.school %}
+                    <p class="author-item__school">{{ author.school }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="author-item__stats">
+                <span class="stat-item">{{ author.pub_authored.count }} publications</span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+
+{% endblock searchcontent %}

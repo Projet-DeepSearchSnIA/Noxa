@@ -1,0 +1,219 @@
+<!--
+=== DISCUSSION DETAIL PAGE TEMPLATE ===
+Description: Academic publication discussion room with threaded messaging system
+
+Expected Context Data from View:
+- discussion: Discussion object with .title, .description, .creator, .publication, .created fields
+- discussion_messages: QuerySet of top-level Message objects (reply_to__isnull=True) ordered chronologically
+- participants: QuerySet of User objects participating in the discussion
+- participants_count: Integer count of discussion participants
+
+Required Model Relationships:
+- discussion.publication: Publication object with .theme, .topic, .authors fields
+- discussion.creator: User object with .username, .photo fields
+- message.user: User object for each message author
+- message.get_replies: Method returning replies to each message
+- publication.authors: ManyToMany relationship for author badge display
+
+Template Features:
+1. COLLECTIONS SIDEBAR:
+  - User's collections list with navigation and management
+  - Create new collection functionality (owner only)
+
+2. DISCUSSION HEADER:
+  - Discussion title with ID, creator info, and publication context
+  - Creation date and publication link
+
+3. THREADED MESSAGING SYSTEM:
+  - Initial discussion description from creator
+  - Top-level messages with nested replies
+  - Author badges for publication authors
+  - Reply count for each message
+  - Visual distinction for user's own messages
+
+4. DISCUSSION METADATA PANEL:
+  - Publication topic/category
+  - Discussion creator info with author badge
+  - Participant avatars and count
+
+5. MESSAGE FORMS:
+  - Reply forms for each message (authenticated users)
+  - Main message form for new top-level messages
+  - Hidden reply_to field for threaded responses
+
+Required User Permissions:
+- Any user: Can view discussion and messages
+- Authenticated users: Can post messages and replies
+- Collection owner: Can manage collections sidebar
+
+JavaScript Dependencies:
+- Form handling for message posting and replies
+- Collection management functionality
+- Message threading and reply system
+-->
+
+
+{% extends "main.html" %}
+
+{% load static %}
+
+{% block title %}
+    {{ discussion.publication.theme }} - {{ discussion.title }}
+{% endblock title %}
+
+{% block content %}
+
+<div class="discussion__container">
+    <p class="discussion__container--title">{{ discussion.title }} <span style="color: var(--dark-grayish-blue);">#{{ discussion.id }}</span></p>
+    <p class="discussion__container--intro">
+        <a href="{% url 'base:user-profile' discussion.creator.id %}"><strong>@{{ discussion.creator.username}}</strong></a> asked this question on 
+        <a href="{% url 'base:publication' discussion.publication.id %}"><strong>{{discussion.publication.theme}}</strong></a>
+    </p>
+    <div class="discussion__container--main">
+        <div class="discussion__container--main__item discussion__container--main__chat">
+            <div class="discussion__container--main__chat--description">
+                <div class="discussion__container--main__chat--description__head">
+                    <div class="discussion__container--main__chat--description__head--creator">
+                        <img src="{{ discussion.creator.photo.url}}" alt="">
+                        <a href="{% url 'base:user-profile' discussion.creator.id %}">
+                            <strong>@{{ discussion.creator.username}}</strong>
+                        </a>
+                        {% if discussion.creator in discussion.publication.authors.all %}
+                            <span style="color: #ccc; margin: 0 5px;">•</span> <span style="color: var(--dark-grayish-blue); font-size: 14px;"> author</span>
+                        {% endif %}
+                    </div>
+                    <p class="discussion__container--main__chat--description__head--date">
+                        <small>on {{ discussion.created }}</small>
+                    </p>
+                    {% if request.user.is_authenticated %}
+                        <button type="button">
+                            Reply
+                        </button>
+                    {% endif %}
+                </div>
+                <p class="discussion__container--main__chat--description__body">
+                    {{ discussion.description }}
+                </p>
+            </div>
+            <div class="discussion__container--main__chat--replies">
+                <p class="discussion__container--main__chat--replies__head"><strong>{{ discussion_messages.count }}</strong> comments</p>
+                <div class="discussion__container--main__chat--replies__content">
+                    {% if discussion_messages %} <!--Top level messages only here-->
+                        {% for message in discussion_messages %}
+                            <div class="discussion__container--main__chat--replies__content--message">
+                                <div class="discussion__container--main__chat--replies__content--message__head">
+                                    <div class="discussion__container--main__chat--replies__content--message__head--creator">
+                                        <img src="{{ message.user.photo.url }}" alt="">
+                                        <a href="{% url 'base:user-profile' message.user.id %}"><strong>@{{ message.user.username}}</strong></a>
+                                        {% if message.user in discussion.publication.authors.all %}
+                                            <span style="color: #ccc; margin: 0 5px;">•</span> <span style="color: var(--dark-grayish-blue); font-size: 14px;"> author</span>
+                                        {% endif %}
+                                    </div>
+                                    <p class="discussion__container--main__chat--replies__content--message__head--date">
+                                        <small>on {{ message.created }}</small>
+                                    </p>
+                                    {% if request.user.is_authenticated %}
+                                        <button type="button">
+                                            Reply
+                                        </button>
+                                    {% endif %}
+                                </div>
+                                <p class="discussion__container--main__chat--replies__content--message__body">
+                                    {{ message.body }}
+                                </p>
+                                <div class="discussion__container--main__chat--replies__content--message__foot">
+                                    <p class="discussion__container--main__chat--replies__content--message__foot--text" style="font-size: 13px; margin-bottom: 1rem;"><strong>{{ message.get_replies.count }}</strong> replies</p>
+                                </div>
+                                {% if message.get_replies %}
+
+                                <div class="discussion__container--main__chat--replies__content--message__replies">
+                                    <!-- Replies to this message -->
+                                    {% for reply in message.get_replies %}
+                                        <div class="discussion__container--main__chat--replies__content--message__replies--reply {% if reply.user == request.user %}own-message{% endif %}" 
+                                            data-message-id="{{ reply.id }}">
+                                            <div class="discussion__container--main__chat--replies__content--message__replies--reply__head">
+                                                <div class="discussion__container--main__chat--replies__content--message__replies--reply__head--creator">
+                                                    <img src="{{ message.user.photo.url }}" alt="">
+                                                    <a href="{% url 'base:user-profile' reply.user.id %}"><strong>@{{ reply.user.username}}</strong></a>
+                                                    {% if reply.user in discussion.publication.authors.all %}
+                                                        <span style="color: #ccc; margin: 0 5px;">•</span> <span style="color: var(--dark-grayish-blue); font-size: 14px;"> author</span>
+                                                    {% endif %}
+                                                </div>
+                                                <p class="discussion__container--main__chat--replies__content--message__replies--reply__head--date">
+                                                    <small>on {{ reply.created }}</small>
+                                                </p>
+                                            </div>
+                                            <p class="discussion__container--main__chat--replies__content--message__replies--reply__body">{{ reply.body }}</p>
+
+                                        </div>
+                                    {% endfor %}
+                                </div>
+
+                                {% endif %}
+                                {% if request.user.is_authenticated %}
+                                    <div class="discussion__container--main__chat--replies__content--message__form">
+                                        <form action="" method="post" id="form-reply" data-message-id="{{ message.id }}">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="reply_to" id="reply_to" value="{{ message.id }}">
+                                            <input type="text" name="body" id="body" placeholder="Write a reply..." required>
+                                            <button class="submit" type="submit">Send</button>
+                                        </form>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+
+                        <form action="" method="post" id="form-reply" data-message-id="{{ message.id }}">
+                            {% csrf_token %}
+                            <input type="text" name="body" id="body" placeholder="Write your message here..." required>
+                            <button class="submit" type="submit">Send</button>
+                        </form>
+                    {% else %}
+                        <div class="no-messages">
+                            <p>No messages yet. Be the first to start the discussion!</p>
+                        </div>
+
+                        <form action="" method="post" id="form-reply" data-message-id="{{ message.id }}">
+                            {% csrf_token %}
+                            <input type="text" name="body" id="body" placeholder="Write your message here..." required>
+                            <button class="submit" type="submit">Send</button>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="discussion__container--main__item--discussion__container--main__other">
+            <div class="discussion__container--main__item--discussion__container--main__other--category">
+                <p class="title">Category</p>
+                <p class="value">{{ discussion.publication.topic }}</p>
+            </div>
+            <div class="discussion__container--main__item--discussion__container--main__other--author">
+                <p class="title">Creator</p>
+                <div class="discussion__container--main__chat--replies__content--message__replies--reply__head--creator" style="width: 100%; display: flex; align-items: center; justify-content: flex-start;">
+                    <img src="{{ discussion.creator.photo.url }}" alt="">
+                    <a href="{% url 'base:user-profile' discussion.creator.id %}"><strong>@{{ discussion.creator.username}}</strong></a>
+                    {% if discussion.creator in discussion.publication.authors.all %}
+                        <span style="color: #ccc; margin: 0 5px;">•</span> <span style="color: var(--dark-grayish-blue); font-size: 14px;"> author</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="discussion__container--main__item--discussion__container--main__other--participants">
+                <p class="title">{{ participants.count }} participant{{ participants_count|pluralize }}</p>
+                <div class="participants">
+                    {% for participant in participants %}
+                        <div class="participant" title="{{ participant.username }}">
+                            <img src="{{ participant.photo.url }}" alt="">
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+{% block js %}
+
+    
+
+{% endblock js %}

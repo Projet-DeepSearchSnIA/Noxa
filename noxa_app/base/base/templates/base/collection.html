@@ -1,0 +1,203 @@
+<!--
+=== COLLECTION DETAIL PAGE TEMPLATE ===
+Description: Display a specific user collection with its publications in a table format
+
+Expected Context Data from View:
+- collection: Collection object with .name, .user, .created fields
+- user: User object who owns the collection (for profile links and permissions)
+- collections: QuerySet of all user's collections with pub_count annotation (sidebar)
+- publications: QuerySet of CollectionPublication objects with .publication and .added fields
+
+Template Features:
+1. COLLECTIONS SIDEBAR:
+  - List of all user's collections with publication counts
+  - Delete buttons for collection owners
+  - "New Collection" button for collection owner
+
+2. COLLECTION HEADER:
+  - Collection name and metadata (creator, creation date, paper count)
+  - Creator avatar and profile link
+  - Publication count display
+
+3. PUBLICATIONS TABLE:
+  - Numbered list of publications in collection
+  - Publication title, topic, authors, and page count
+  - Date added to collection
+  - PDF view and publication detail links
+  - Delete from collection action (owner only)
+
+4. INTERACTIVE ELEMENTS:
+  - Confirmation dialog for removing publications
+  - Collection deletion functionality
+  - Responsive table layout
+
+Required User Permissions:
+- Any user: Can view public collections
+- Collection owner: Can delete publications from collection and manage collections
+
+JavaScript Dependencies:
+- jQuery for delete confirmation and event handling
+- Collection management modal (inherited from main template)
+-->
+
+
+{% extends "main.html" %}
+
+{% load static %}
+
+{% block title %}
+    Noxa - Collection - {{ collection.name }}
+{% endblock title %}
+
+{% block content %}
+
+<div class="collection__container">
+    <div class="collection__container--first">
+        <div class="profile__container--favs__item--collections">
+
+            {% if collections %}
+                {% for collection in collections %}
+                    <div class="profile__container--favs__item--collections__collection">
+                        <a href="{% url 'base:collection' user.id collection.id %}">
+                            <p style="font-size: 14px; font-weight: 500;">{{ collection.name }} ({{ collection.pub_count }})</p>
+                            <small>{{ collection.created|timesince }} ago</small>
+                        </a>
+                        <div class="delete" for="{{ collection.id }}">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                            </svg>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p class="profile__container--favs__item--collections__empty">No collection here</p>
+            {% endif %}
+
+            {% if request.user.id == user.id %}
+                <button type="button" class="profile__container--favs__item--collections__newcol">
+                    New Collection
+                </button>
+            {% endif %}
+
+        </div>
+    </div>
+
+    <div class="collection__container--second">
+        <div class="collection__container--second__header">
+            <p class="collection__container--second__header--title">{{ collection.name }}</p>
+            <div class="collection__container--second__header--info">
+                <div class="collection__container--second__header--info__author">
+                    <div class="collection__container--second__header--info__author--avatar avatar--medium active">
+                        <img src="{{ collection.user.photo.url }}" />
+                    </div>
+                    <small><a href="{% url 'base:user-profile' collection.user.id %}">@{{ collection.user.username }}</a></small>
+                </div>
+                <span style="color: #ccc; margin: 2px 5px;">•</span>
+                <p class="collection__container--second__header--info__date">created on {{ collection.created|date:"M d, Y" }}</p>
+                <span style="color: #ccc; margin: 2px 5px;">•</span>
+                <p class="collection__container--second__header--info__nbpub">{{ publications.count }} papers</p>
+            </div>
+        </div>
+
+        <hr>
+
+        <div class="table_container">
+            {% if publications %}
+            <table class="collection__container--second__table table" id="resizable">
+                <thead class="cols">
+                    <tr class="big_head">
+                        <th class="head" id="number">#</th>
+                        <th class="head" id="title">Title</th>
+                        <th class="head" id="topic">Topic</th>
+                        <th class="head" id="date">Date Added</th>
+                        <th class="head" id="pages">
+                            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor">
+                                <path d="M240-80q-33 0-56.5-23.5T160-160v-640q0-33 23.5-56.5T240-880h320l240 240v480q0 33-23.5 56.5T720-80H240Zm280-520v-200H240v640h480v-440H520ZM240-800v200-200 640-640Z"/>
+                            </svg>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody class="cols">
+                    {% for pub in publications %}
+                    <tr class="big_contents">
+                        <td class="contents number">
+                            <div class="n">
+                                {{ forloop.counter }}
+                            </div>
+                            <a href="{% url 'base:pdf' pub.publication.id %}" class="svg">
+                                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor">
+                                    <path d="M480-320q75 0 127.5-52.5T660-500q0-75-52.5-127.5T480-680q-75 0-127.5 52.5T300-500q0 75 52.5 127.5T480-320Zm0-72q-45 0-76.5-31.5T372-500q0-45 31.5-76.5T480-608q45 0 76.5 31.5T588-500q0 45-31.5 76.5T480-392Zm0 192q-146 0-266-81.5T40-500q54-137 174-218.5T480-800q146 0 266 81.5T920-500q-54 137-174 218.5T480-200Zm0-300Zm0 220q113 0 207.5-59.5T832-500q-50-101-144.5-160.5T480-720q-113 0-207.5 59.5T128-500q50 101 144.5 160.5T480-280Z"/>
+                                </svg>
+                            </a>
+                        </td>
+                        <td class="contents title" title="{{ pub.publication.theme }}">
+                            <a class="theme" href="{% url 'base:publication' pub.publication.id %}">
+                                {{ pub.publication.theme }}
+                            </a>
+                            <div class="authors">
+                                {% for author in pub.publication.authors.all %}
+                                    <small><a href="{% url 'base:user-profile' author.id %}">@{{ author.username }}</a></small>{% if not forloop.last %}, {% endif %}
+                                {% endfor %}
+                            </div>
+                        </td>
+                        <td class="contents topic">{{ pub.publication.topic.name }}</td>
+                        <td class="contents date">{{ pub.added|date:"M d, Y" }}</td>
+                        <td class="contents pages">
+                            {{ pub.publication.page_count }} pages
+                        </td>
+                        {% if collection.user.id == request.user.id %}
+                            <td class="contents actions">
+                                <button class="delete-btn" type="button" for-collection="{{ collection.id }}" for-publication="{{ pub.publication.id }}">Delete</button>
+                            </td>
+                        {% endif %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+                <p>No publications in this collection yet.</p>
+            {% endif %}
+        </div>
+
+    </div>
+</div>
+
+<div class="modal_cont">
+    <div class="modal">
+        <div class="modal__header">
+            <p class="modal__header--title">Create Collection</p>
+            <button type="button" class="close_btn">
+                &times;
+            </button>
+        </div>
+        <form action="{% url 'base:create-collection' %}" class="modal__form" method="POST" autocomplete="off">
+            {% csrf_token %}
+            <div class="form__group">
+                <label for="name">Collection name</label>
+                <input type="text" name="name" id="name" class="form__group--input">
+            </div>
+
+            <div class="modal__btns">
+                <button type="submit" class="create">Create</button>
+                <button type="button" class="cancel">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock content %}
+
+{% block js %}
+
+<script>
+    $('.contents.actions button').on('click', function(e) {
+        const collectionId = $(this).attr('for-collection');
+        const publicationId = $(this).attr('for-publication');
+        
+        if (confirm('Are you sure you want to remove this publication from the collection?')) {
+            window.location.href = `/delete-from-collection/${collectionId}/${publicationId}/`;
+        }
+    });
+</script>
+
+{% endblock js%}

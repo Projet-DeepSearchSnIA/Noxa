@@ -1,0 +1,324 @@
+{% extends "main.html" %}
+
+{% load static %}
+
+{% block title %}
+    Noxa - Publish a subject on Baki
+{% endblock title %}
+
+{% block content %}
+
+<div class="publicationform__container">
+    <form class="publicationform__container--form" method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <div class="publicationform__container--form__content">
+
+            <!-- Card 1 – Academic metadata -->
+            <div class="publicationform__container--form__card">
+
+                <!-- Class / Level -->
+                <div class="form__group">
+                    <label for="class_level" class="form__group--label required">Class / Level</label>
+                    <select id="class_level" name="class_level" class="form__control" required>
+                        <option value="">Select class</option>
+                        <!-- Dynamically filled from backend -->
+                        {% for class in classes %}
+                        <option value="{{ class.name }}">{{ class.label }}</option>
+                        {% endfor %}
+                    </select>
+                    <div class="form-text">
+                        Select the academic class/level.
+                    </div>
+                </div>
+
+                <!-- Specialization (optional) -->
+                <div class="form__group">
+                    <label for="specialization" class="form__group--label">Specialization (optional)</label>
+                    <select id="specialization" name="specialization" class="form__control">
+                        <option value="">Select specialization</option>
+                        <!-- Dynamically filtered depending on class -->
+                        {% for specialization in specializations %}
+                        <option value="{{ specialization.name }}">{{ specialization.label }}</option>
+                        {% endfor %}
+                    </select>
+                    <div class="form-text">
+                        This field is available only for some classes.
+                    </div>
+                </div>
+
+                <!-- Academic Year -->
+                <div class="form__group">
+                    <label for="academic_year" class="form__group--label required">Academic Year</label>
+                     <select id="academic_year" name="academic_year" class="form__control">
+                        <option value="">Select academic year</option>
+                        <!-- Dynamically filtered depending on class -->
+                        {% for academic_year in academic_years %}
+                        <option value="{{ academic_year }}">{{ academic_year }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Semester -->
+                <div class="form__group">
+                    <label for="semester" class="form__group--label required">Semester</label>
+                    <select id="semester" name="semester" class="form__control" required>
+                        <option value="">Select semester</option>
+                        <option value="1">Semester 1</option>
+                        <option value="2">Semester 2</option>
+                    </select>
+                </div>
+
+                 <!-- Subject / Course -->
+                <div class="form__group">
+                    <label for="subject" class="form__group--label required">Subject / Course</label>
+                    <div class="autocomplete-container">
+                         <select id="subject" name="subject" class="form__control">
+                        <option value="">Select course</option>
+                        <!-- Dynamically filtered depending on class -->
+                        {% for course in courses %}
+                        <option value="{{ course.name }}">{{ course.label }}</option>
+                        {% endfor %}
+                    </select>
+                        <div id="subject-suggestions" class="autocomplete-suggestions"></div>
+                    </div>
+                    <div class="form-text">
+                        Example: Mathematics, Physics, Computer Science...
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Card 2 – Files upload -->
+            <div class="publicationform__container--form__card">
+
+                <!-- Subject file -->
+                <div class="form__group">
+                    <label for="subject_file" class="form__group--label required">Exam Subject File (PDF)</label>
+                    <div class="file-upload" id="subject-file-upload">
+                        <input type="file" id="subject_file" name="subject_file" accept=".pdf" required>
+                        <label for="subject_file" class="file-upload-label">
+                            <div>📄 Drop the subject PDF here or click to browse</div>
+                            <div class="file-info">Maximum file size: 10MB</div>
+                        </label>
+                    </div>
+                    <div id="subject-file-name" class="form-text"></div>
+                </div>
+
+                <!-- Correction file (optional) -->
+                <div class="form__group">
+                    <label for="correction_file" class="form__group--label">Correction File (optional)</label>
+                    <div class="file-upload" id="correction-file-upload">
+                        <input type="file" id="correction_file" name="correction_file" accept=".pdf">
+                        <label for="correction_file" class="file-upload-label">
+                            <div>✅ Drop the correction PDF here or click to browse</div>
+                            <div class="file-info">Optional - upload only if available</div>
+                        </label>
+                    </div>
+                    <div id="correction-file-name" class="form-text"></div>
+                </div>
+
+            </div>
+
+            <!-- Card 3 – Additional information -->
+            <div class="publicationform__container--form__card">
+
+                <div class="form__group">
+                    <label for="instructions" class="form__group--label">Instructions / Notes</label>
+                    <textarea id="instructions" name="instructions" class="form__control" rows="3"
+                              placeholder="Any special instructions about this exam subject..."></textarea>
+                </div>
+
+                <div class="form__group">
+                    <label for="source" class="form__group--label">Source</label>
+                    <input type="text" id="source" name="source" class="form__control"
+                           placeholder="Where does this subject come from? (optional)">
+                    <div class="form-text">
+                        Example: School of Engineering, Department of Mathematics...
+                    </div>
+                </div>
+
+                <div class="form__group">
+                    <label for="tags-input" class="form__group--label">Tags</label>
+                    <div class="autocomplete-container">
+                        <input type="text" id="tags-input" class="form__control" 
+                            placeholder="Type to search for tags or create new ones...">
+                        <div id="tags-suggestions" class="autocomplete-suggestions"></div>
+                    </div>
+                    <div id="selected-tags" class="selected-items"></div>
+                    <input type="hidden" id="tags-hidden" name="tags" value="">
+                    <div class="form-text">
+                        Egs: mathematics
+                        <br>
+                        Tags helps the visibility of the subject for the community. Add meaningful tags
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Action buttons -->
+        <div class="publicationform__container--form__btns">
+            <a href="{% url 'base:home' %}" class="btn btn-secondary">Cancel</a>
+            <button type="submit" class="btn btn-primary">Publish Subject</button>
+        </div>
+
+    </form>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const classSelect = document.getElementById("class_level");
+    const specializationSelect = document.getElementById("specialization");
+    const courseSelect = document.getElementById("subject");
+
+    function updateSelect(selectElem, items, defaultText) {
+        selectElem.innerHTML = `<option value="">${defaultText}</option>`;
+        items.forEach(item => {
+            const opt = document.createElement("option");
+            opt.value = item.name;
+            opt.textContent = item.label;
+            selectElem.appendChild(opt);
+        });
+    }
+
+    function fetchFilters() {
+        const class_value = classSelect.value;
+        const specialization_value = specializationSelect.value;
+        const semester_value = document.getElementById("semester").value;
+
+        const params = new URLSearchParams({
+            class_level: class_value,
+            specialization: specialization_value,
+            semester: semester_value
+        });
+
+        fetch(`/ajax/filter-courses/?${params}`)
+            .then(res => res.json())
+            .then(data => {
+                updateSelect(specializationSelect, data.specializations, "Select specialization");
+                updateSelect(courseSelect, data.courses, "Select course");
+            })
+            .catch(err => console.error(err));
+    }
+
+    classSelect.addEventListener("change", fetchFilters);
+    specializationSelect.addEventListener("change", fetchFilters);
+    document.getElementById("semester").addEventListener("change", fetchFilters);
+});
+</script>
+
+
+<script>
+    $(document).ready(function() {
+        let selectedTags = [];
+
+         // Generic autocomplete function
+        function setupAutocomplete(inputId, suggestionsId, endpoint, selectedArray, selectedContainerId, hiddenInputId, allowCreate = false) {
+            const input = $('#' + inputId);
+            const suggestions = $('#' + suggestionsId);
+            const selectedContainer = $('#' + selectedContainerId);
+            const hiddenInput = $('#' + hiddenInputId);
+
+            input.on('input', function() {
+                const query = $(this).val().trim();
+                
+                clearTimeout(searchTimeout);
+                
+                if (query.length === 0) {
+                    suggestions.hide();
+                    return;
+                }
+
+                searchTimeout = setTimeout(function() {
+                    $.ajax({
+                        url: endpoint,
+                        data: { q: query },
+                        success: function(data) {
+                            suggestions.empty();
+                            
+                            if (data.results && data.results.length > 0) {
+                                data.results.forEach(function(item) {
+                                    if (!selectedArray.some(selected => selected.id === item.id)) {
+                                        const suggestion = $('<div class="autocomplete-suggestion">')
+                                            .text(item.text)
+                                            .data('id', item.id)
+                                            .data('text', item.text);
+                                        suggestions.append(suggestion);
+                                    }
+                                });
+                                suggestions.show();
+                            } else if (allowCreate && query.length > 0) {
+                                const createSuggestion = $('<div class="autocomplete-suggestion">')
+                                    .html(`Create new: "<strong>${query}</strong>"`)
+                                    .data('id', null)
+                                    .data('text', query);
+                                suggestions.append(createSuggestion);
+                                suggestions.show();
+                            } else {
+                                if (!allowCreate) {
+                                    suggestions.html('<div class="no-results">No matching results found</div>');
+                                    suggestions.show();
+                                } else {
+                                    suggestions.hide();
+                                }
+                            }
+                        },
+                        error: function() {
+                            suggestions.html('<div class="no-results">Error searching. Please try again.</div>');
+                            suggestions.show();
+                        }
+                    });
+                }, 300);
+            });
+
+            // Handle suggestion clicks
+            suggestions.on('click', '.autocomplete-suggestion', function() {
+                const id = $(this).data('id');
+                const text = $(this).data('text');
+                
+                if (!selectedArray.some(item => item.text === text)) {
+                    selectedArray.push({ id: id, text: text });
+                    updateSelectedItems(selectedArray, selectedContainer, hiddenInput, inputId);
+                    input.val('');
+                    suggestions.hide();
+                }
+            });
+
+            // Hide suggestions when clicking outside
+            $(document).on('click', function(e) {
+                if (!$(e.target).closest('.autocomplete-container').length) {
+                    suggestions.hide();
+                }
+            });
+
+            // Handle Enter key
+            input.on('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const query = $(this).val().trim();
+                    const visibleSuggestions = suggestions.find('.autocomplete-suggestion:visible');
+                    
+                    if (visibleSuggestions.length === 1) {
+                        visibleSuggestions.click();
+                    } else if (allowCreate && query.length > 0 && visibleSuggestions.length === 0) {
+                        // Create new tag if no suggestions and creation is allowed
+                        if (!selectedArray.some(item => item.text === query)) {
+                            selectedArray.push({ id: null, text: query });
+                            updateSelectedItems(selectedArray, selectedContainer, hiddenInput, inputId);
+                            input.val('');
+                            suggestions.hide();
+                        }
+                    }
+                }
+            });
+        }
+
+        // Setup autocomplete for tags (creation allowed)
+        setupAutocomplete('tags-input', 'tags-suggestions', '/filter-tags/', selectedTags, 'selected-tags', 'tags-hidden', true);
+    });
+</script>
+
+
+{% endblock content %}

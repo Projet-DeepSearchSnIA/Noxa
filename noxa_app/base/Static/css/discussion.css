@@ -1,0 +1,388 @@
+/* discussion.css */
+/*****************************************************************************************************/
+
+
+.discussion__container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    padding: 0 15px;
+}
+
+.discussion__container--title {
+    font-size: 2.5rem;
+    width: 100%;
+}
+
+.discussion__container--intro {
+    font-size: 1rem;
+    width: 100%;
+    margin-bottom: 1rem;
+}
+
+.discussion__container--intro a {
+    text-decoration: none;
+    color: var(--black);
+}
+
+.discussion__container--intro a:hover {
+    text-decoration: underline;
+}
+
+.discussion__container--main {
+    display: grid;
+    grid-template-columns: 3fr 1fr;
+    gap: 30px;
+    width: 100%;
+}
+
+.discussion__container--main__item {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+
+.discussion__container--main__chat--description {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    border: 1px solid var(--dark-grayish-blue);
+    border-radius: 8px;
+    padding: 0.5rem 1rem;
+    margin-bottom: 2rem;
+}
+
+.discussion__container--main__chat--description__head {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    margin-bottom: 1rem;
+}
+
+.discussion__container--main__chat--description__head--creator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1rem;
+}
+
+.discussion__container--main__chat--description__head--date {
+    margin-right: 3rem;
+}
+
+.discussion__container--main__chat--description__head--creator img {
+    width: 30px;
+    height: 30px;
+    margin-right: 8px;
+}
+
+.discussion__container--main__chat--description__head--creator a {
+    text-decoration: none;
+    color: var(--black);
+}
+
+.discussion__container--main__chat--description__body {
+    font-size: 14px;
+    color: var(--very-dark-blue);
+}
+
+.discussion__container--main__chat--description__head button {
+    border: none;
+    outline: none;
+    background: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.4rem 0.8rem;
+    border-radius: 3px;
+}
+
+.discussion__container--main__chat--description__head button:hover {
+    background: var(--grayish-blue);
+}
+
+.discussion__container--main__chat--replies {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.discussion__container--main__chat--replies__head {
+    font-size: 1.6rem;
+    margin-bottom: 1rem;
+}
+
+.discussion__container--main__chat--replies__content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.discussion__container--main__chat--replies__content--message {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    border: 1px solid var(--dark-grayish-blue);
+    border-radius: 8px;
+    padding: 0.5rem 1rem;
+    margin-bottom: 2rem;
+}
+
+.discussion__container--main__chat--replies__content--message__head {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    margin-bottom: 1rem;
+}
+
+.discussion__container--main__chat--replies__content--message__head--creator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1rem;
+}
+
+.discussion__container--main__chat--replies__content--message__head--creator img {
+    width: 30px;
+    height: 30px;
+    margin-right: 8px;
+}
+
+.discussion__container--main__chat--replies__content--message__head--creator a {
+    text-decoration: none;
+    color: var(--black);
+}
+
+.discussion__container--main__chat--replies__content--message__head--date {
+    margin-right: 3rem;
+}
+
+.discussion__container--main__chat--replies__content--message__head button {
+    border: none;
+    outline: none;
+    background: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.4rem 0.8rem;
+    border-radius: 3px;
+}
+
+.discussion__container--main__chat--replies__content--message__head button:hover {
+    background: var(--grayish-blue);
+}
+
+.discussion__container--main__chat--replies__content--message__body {
+    font-size: 14px;
+    color: var(--very-dark-blue);
+    margin-bottom: 1rem;
+}
+
+
+.discussion__container--main__chat--replies__content--message__form {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+}
+
+
+.discussion__container--main__chat--replies__content--message__replies--reply {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    padding: 0.5rem 1rem;
+    background: var(--light-card-hover);
+}
+
+.discussion__container--main__chat--replies__content--message__replies--reply__head {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    margin-bottom: 1rem;
+}
+
+.discussion__container--main__chat--replies__content--message__replies--reply__head--creator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1rem;
+}
+
+
+.discussion__container--main__chat--replies__content--message__replies--reply__head--creator img {
+    width: 30px;
+    height: 30px;
+    margin-right: 8px;
+}
+
+.discussion__container--main__chat--replies__content--message__replies--reply__head--creator a {
+    text-decoration: none;
+    color: var(--black);
+}
+
+.discussion__container--main__chat--replies__content--message__replies--reply__head--date {
+    margin-right: 3rem;
+}
+
+.discussion__container--main__chat--replies__content--message__replies--reply__body {
+    font-size: 14px;
+    color: var(--very-dark-blue);
+    margin-bottom: 1rem;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+#form-reply {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 1rem;
+}
+
+#form-reply #body {
+    width: 90%;
+    border: 1px solid var(--dark-grayish-blue);
+    outline: none;
+    padding: 0.4rem 0.8rem;
+    border-radius: 5px;
+}
+
+#form-reply #body:focus {
+    border: 1px solid var(--black);
+}
+
+#form-reply .submit {
+    width: 9%;
+    padding: 0.4rem 0.8rem;
+    background: var(--brand-color);
+    color: var(--white);
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+
+
+
+
+
+
+
+
+.discussion__container--main__item--discussion__container--main__other {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    width: 100%;
+}
+
+.discussion__container--main__item--discussion__container--main__other--category {
+    width: 100%;
+    padding: 0.7rem 0;
+    border-bottom: 1px solid var(--grayish-blue);
+    margin-bottom: 0.7rem;
+}
+
+.discussion__container--main__item--discussion__container--main__other--category .title {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 0.7rem;
+}
+
+.discussion__container--main__item--discussion__container--main__other--category .value {
+    font-size: 13px;
+}
+
+.discussion__container--main__item--discussion__container--main__other--author {
+    width: 100%;
+    padding: 0.7rem 0;
+    border-bottom: 1px solid var(--grayish-blue);
+    margin-bottom: 0.7rem;
+}
+
+.discussion__container--main__item--discussion__container--main__other--author .title {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 0.7rem;
+}
+
+.discussion__container--main__item--discussion__container--main__other--participants {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    width: 100%;
+    padding: 0.7rem 0;
+    border-bottom: 1px solid var(--grayish-blue);
+    margin-bottom: 0.7rem;
+}
+
+.discussion__container--main__item--discussion__container--main__other--participants .participants {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    width: 100%;
+}
+
+.discussion__container--main__item--discussion__container--main__other--participants .participant {
+    width: 25px;
+    height: 25px;
+    border: 2px solid var(--dark-grayish-blue);
+    border-radius: 888px;
+    margin-right: 3px;
+}
+
+.discussion__container--main__item--discussion__container--main__other--participants .title {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 0.7rem;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.no-messages {
+    text-align: center;
+    color: var(--text-secondary);
+    padding: 3rem;
+    font-style: italic;
+}
+
+
+
+
+
+
+

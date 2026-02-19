@@ -1,0 +1,13 @@
+.tag__container {
+    display: flex;
+    flex-direction: column;
+}
+
+.tag__container p {
+    font-size: 2.5rem;
+}
+
+.tag__container small {
+    margin-bottom: 1rem;
+    padding: 0 10px;
+}

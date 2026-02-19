@@ -1,0 +1,44 @@
+{% extends "search_template.html" %}
+
+{% load static %}
+
+{% block searchcontent %}
+
+{% if search_results %}
+<div class="search-section">
+    <h3 class="search-section__title">Profiles</h3>
+    <div class="search-section__content">
+        {% for profile in search_results %}
+        <div class="search-item profile-item">
+            <div class="profile-item__main">
+                <div class="profile-item__avatar">
+                    {% if profile.photo %}
+                    <img src="{{ profile.photo.url }}" alt="{{ profile.username }}" />
+                    {% else %}
+                    <div class="avatar-placeholder">{{ profile.username|first|upper }}</div>
+                    {% endif %}
+                </div>
+                <div class="profile-item__info">
+                    <a href="{% url 'base:user-profile' profile.id %}?from=search&q={{ q }}&tab={{ active_tab }}" class="profile-item__username">{{ profile.username }}</a>
+                    {% if profile.first_name or profile.last_name %}
+                    <p class="profile-item__fullname">{{ profile.first_name }} {{ profile.last_name }}</p>
+                    {% endif %}
+                    {% if profile.school %}
+                    <p class="profile-item__school">{{ profile.school }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="profile-item__stats">
+                {% if profile.pub_authored.count > 0 %}
+                <span class="stat-item">{{ profile.pub_authored.count }} publications</span>
+                {% endif %}
+                <span class="stat-item">Joined {{ profile.date_joined|timesince }} ago</span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+
+{% endblock searchcontent %}

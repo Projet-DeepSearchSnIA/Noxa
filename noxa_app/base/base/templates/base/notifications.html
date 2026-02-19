@@ -1,0 +1,87 @@
+<!--
+=== NOTIFICATIONS PAGE TEMPLATE ===
+Description: User notifications center displaying recent activity and interactions
+
+Expected Context Data from View:
+- notifications: QuerySet of Notification objects for current user, ordered by creation date (last 50)
+
+Required Notification Model Fields:
+- notification.id: Primary key for marking as read
+- notification.actor: User object who triggered the notification (.photo, .username)
+- notification.title: Short notification headline
+- notification.message: Detailed notification content
+- notification.is_read: Boolean flag for read/unread status
+- notification.time_since: Method/property returning time elapsed since creation
+- notification.action_url: Target URL when notification is clicked (handled by view)
+
+Template Features:
+1. NOTIFICATION LIST:
+  - Chronological list of user notifications
+  - Visual distinction between read/unread notifications
+  - Actor profile photos and formatted messages
+
+2. NOTIFICATION STATES:
+  - Unread indicator dot for new notifications
+  - "unread" CSS class for styling unread notifications
+  - Time elapsed display for each notification
+
+3. INTERACTION BEHAVIOR:
+  - Click-to-read: Links to mark_notification_read view
+  - Automatic redirect to notification target after marking as read
+  - Empty state message when no notifications exist
+
+4. NOTIFICATION CONTENT:
+  - Actor information (photo, profile link via notification action)
+  - Notification title and detailed message
+  - Timestamp showing relative time
+
+Required User Permissions:
+- Must be authenticated (notifications are user-specific)
+- Users can only see their own notifications
+
+JavaScript Dependencies:
+- None required (uses standard HTML links and forms)
+-->
+
+
+
+{% extends "main.html" %}
+
+{% load static %}
+
+{% block title %}
+    Noxa - Notifications
+{% endblock title %}
+
+{% block content %}
+
+<div class="notifications__container">
+    <h1>Notifications</h1>
+    <div class="notifications__container--content">
+        {% if notifications %}
+            {% for notification in notifications %}
+                <a href="{% url 'base:mark-notification-read' notification.id %}" class="notifications__container--content__follower notification {% if not notification.is_read %}unread{% endif %}">
+                    {% if not notification.is_read %}
+                        <div class="notifications_notification-indicator"></div>
+                    {% endif %}
+                    <div class="notifications__container--content__follower--item first">
+                        <div class="notifications__container--content__follower--photo">
+                            <img src="{{ notification.actor.photo.url }}" alt="">
+                        </div>
+                        <div class="notifications__container--content__follower--text">
+                            <strong style="font-size: 1.2rem;">{{ notification.title }}</strong>
+                            <p style="font-size: 1rem;" title="{{ notification.message }}">{{ notification.message }}</p>
+                        </div>
+                    </div>
+                    <div class="notifications__container--content__follower--item second">
+                        <p>{{ notification.time_since }} ago</p>
+                    </div>
+                </a>
+            {% endfor %}
+        {% else %}
+            <p>Nothing to show here</p>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock content %}
