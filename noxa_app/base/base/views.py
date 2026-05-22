@@ -541,8 +541,6 @@ def createPublication(request):
             file_url = upload_file_cloudinary(file=file, file_type="raw", folder="documents/memoires", public_id=file_name_without_extension)
             if not file_url:
                 messages.error(request, "Erreur lors de l'upload du fichier.")
-                if temp_path and os.path.exists(temp_path):
-                    os.remove(temp_path)
                 return render(request, 'base/publication_form.html')
             
 
