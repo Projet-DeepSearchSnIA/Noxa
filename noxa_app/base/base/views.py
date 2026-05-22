@@ -534,21 +534,13 @@ def createPublication(request):
             default_metadata = {}
             default_metadata['subject'] = topic_name
 
-            # save the file in the cloud and get the url
-            # file_url = upload_file_cloudinary(file=file, file_type="raw", folder="documents/memoires", public_id=file_name_without_extension  )
-
-            # Lire le contenu du fichier AVANT l'upload S3
+            # Upload vers Cloudinary
+            file.seek(0)
             file_content = file.read()
-            file.seek(0)  # Remettre au début pour S3
-            
-            # Upload to aws
-            try:
-                file_url = upload_file_to_s3(file=file, s3_path=f"documents/memoires/{file_basename}", public=True)
-                print(f"File uploaded to S3: {file_url}")
-            except Exception as e:
-                print(f"Error uploading file to S3: {e}")
-                messages.error(request, f"Erreur lors de l'upload du fichier: {e}")
-                # Nettoyer le fichier temporaire
+            file.seek(0)
+            file_url = upload_file_cloudinary(file=file, file_type="raw", folder="documents/memoires", public_id=file_name_without_extension)
+            if not file_url:
+                messages.error(request, "Erreur lors de l'upload du fichier.")
                 if temp_path and os.path.exists(temp_path):
                     os.remove(temp_path)
                 return render(request, 'base/publication_form.html')

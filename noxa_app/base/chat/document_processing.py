@@ -34,7 +34,7 @@ class DocumentProcessingService:
         """Initialise l'extracteur PDF"""
         if self.pdf_extractor is None:
             from rag_core.extraction.pdf_extractor import PDFExtractor
-            from noxa_app.base.base.cloud_service import upload_file_cloudinary
+            from base.cloud_service import upload_file_cloudinary
 
             config = {
                 "pymupdf": {"extract_images": True},
