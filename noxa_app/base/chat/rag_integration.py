@@ -1,8 +1,7 @@
 """
 Service d'intégration RAG pour Django
-Connecte les modules src/ (LLMHandler, PineconeRetriever) au chatbot Django
+Connecte rag_core (LLMHandler, PineconeRetriever) au chatbot Django
 """
-import sys
 import os
 import logging
 import traceback
@@ -10,11 +9,6 @@ from typing import List, Dict, Optional
 from dataclasses import dataclass, field
 
 from django.conf import settings
-
-# Ajoute le dossier racine au path pour importer src/
-BASE_DIR = settings.BASE_DIR.parent.parent  # Remonte de noxa_app/base/ à la racine
-if str(BASE_DIR) not in sys.path:
-    sys.path.insert(0, str(BASE_DIR))
 
 logger = logging.getLogger('services.rag')
 
@@ -61,36 +55,28 @@ class DjangoRAGService:
     
     def _initialize_services(self):
         """Initialise les services LLM et Retriever"""
-        # Récupère les configurations
         hf_token = getattr(settings, 'HF_TOKEN', None)
         pinecone_key = getattr(settings, 'PINECONE_API_KEY', None)
         pinecone_index = getattr(settings, 'PINECONE_INDEX_NAME', None)
 
-        # Log détaillé pour Railway
-        print("\n" + "=" * 50)
-        print("🔍 DIAGNOSTIC RAG (Direct Print for Railway)")
-        
         self.missing_configs = []
         if not hf_token: self.missing_configs.append("HF_TOKEN")
         if not pinecone_key: self.missing_configs.append("PINECONE_API_KEY")
         if not pinecone_index: self.missing_configs.append("PINECONE_INDEX_NAME")
 
-        print(f"  - HF_TOKEN: {'✅ Présent' if hf_token else '❌ MANQUANT'}")
-        print(f"  - PINECONE_API_KEY: {'✅ Présent' if pinecone_key else '❌ MANQUANT'}")
-        print(f"  - PINECONE_INDEX_NAME: {'✅ Présent (' + str(pinecone_index) + ')' if pinecone_index else '❌ MANQUANT'}")
-        print("=" * 50)
+        logger.info("diagnostic RAG — HF_TOKEN: %s, PINECONE_API_KEY: %s, PINECONE_INDEX_NAME: %s",
+                    "présent" if hf_token else "manquant",
+                    "présent" if pinecone_key else "manquant",
+                    pinecone_index or "manquant")
 
         if self.missing_configs:
-            print(f"❌ Initialisation stoppée : Clés manquantes : {', '.join(self.missing_configs)}")
+            logger.error("initialisation stoppée — clés manquantes: %s", ", ".join(self.missing_configs))
             return
 
         try:
-            # Import des modules src/
-            from src.generation.llm_handler import LLMHandler
-            from src.retrieval.retriever import PineconeRetriever
-            
-            # Initialise le LLM Handler
-            print("🚀 Initialisation du LLM Handler...")
+            from rag_core.generation.llm_handler import LLMHandler
+            from rag_core.retrieval.retriever import PineconeRetriever
+
             self.llm_handler = LLMHandler(
                 model_name=getattr(settings, 'LLM_MODEL', 'meta-llama/Llama-3.1-8B-Instruct'),
                 api_key=hf_token,
@@ -98,10 +84,8 @@ class DjangoRAGService:
                 max_tokens=getattr(settings, 'LLM_MAX_TOKENS', 1000),
                 provider=None
             )
-            print("✅ LLM Handler initialisé")
-            
-            # Initialise le Pinecone Retriever
-            print("🚀 Initialisation du Pinecone Retriever...")
+            logger.info("LLM Handler initialisé")
+
             self.retriever = PineconeRetriever(
                 api_key=pinecone_key,
                 index_name=getattr(settings, 'PINECONE_INDEX_NAME', 'noxa-rag'),
@@ -109,16 +93,10 @@ class DjangoRAGService:
                 rerank_model=getattr(settings, 'PINECONE_RERANK_MODEL', 'bge-reranker-v2-m3'),
                 namespace=getattr(settings, 'PINECONE_NAMESPACE', '__default__')
             )
-            print("✅ Pinecone Retriever initialisé")
-            
+            logger.info("Pinecone Retriever initialisé")
+
         except Exception as e:
-            print(f"\n❌ ERREUR CRITIQUE INITIALISATION RAG: {e}")
-            print("-" * 30)
-            traceback.print_exc()
-            print("-" * 30)
-            
-            logger.error(f"❌ Erreur CRITIQUE initialisation services RAG: {e}")
-            logger.error(traceback.format_exc())
+            logger.error("erreur critique initialisation RAG: %s\n%s", e, traceback.format_exc())
             self.llm_handler = None
             self.retriever = None
     
