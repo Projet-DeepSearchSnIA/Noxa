@@ -4,7 +4,7 @@ FROM python:3.11-slim
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
-ENV PYTHONPATH="/app:/app/noxa_app/base:/app/src"
+ENV PYTHONPATH="/app:/app/noxa_app/base"
 ENV PORT 8000
 
 # Set work directory
