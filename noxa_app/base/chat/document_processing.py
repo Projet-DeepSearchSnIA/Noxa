@@ -2,17 +2,11 @@
 Service de traitement de documents pour Django
 Exécute le pipeline complet: OCR → Chunking → Embedding → Pinecone
 """
-import sys
 import os
 import logging
 from pathlib import Path
 from typing import Dict, List, Optional
 from django.conf import settings
-
-# Ajoute le dossier racine au path pour importer src/
-BASE_DIR = settings.BASE_DIR.parent.parent
-if str(BASE_DIR) not in sys.path:
-    sys.path.insert(0, str(BASE_DIR))
 
 logger = logging.getLogger('services.document_processing')
 
@@ -21,7 +15,7 @@ class DocumentProcessingService:
     """Service pour traiter les documents PDF"""
     
     def __init__(self):
-        self.base_dir = BASE_DIR
+        self.base_dir = settings.BASE_DIR.parent.parent
         self.raw_dir = self.base_dir / 'data' / 'raw'
         self.extracted_dir = self.base_dir / 'data' / 'extracted'
         self.chunked_dir = self.base_dir / 'data' / 'chunked'
@@ -39,8 +33,9 @@ class DocumentProcessingService:
     def _init_pdf_extractor(self):
         """Initialise l'extracteur PDF"""
         if self.pdf_extractor is None:
-            from src.extraction.pdf_extractor import PDFExtractor
-            
+            from rag_core.extraction.pdf_extractor import PDFExtractor
+            from noxa_app.base.base.cloud_service import upload_file_cloudinary
+
             config = {
                 "pymupdf": {"extract_images": True},
                 "doctr": {
@@ -58,14 +53,14 @@ class DocumentProcessingService:
                 "output_dir": str(self.extracted_dir),
                 "temp_dir": str(self.temp_dir)
             }
-            
-            self.pdf_extractor = PDFExtractor(config=config)
+
+            self.pdf_extractor = PDFExtractor(config=config, upload_callback=upload_file_cloudinary)
             logger.info("✅ PDF Extractor initialisé")
     
     def _init_text_splitter(self):
         """Initialise le text splitter"""
         if self.text_splitter is None:
-            from src.chunking.text_splitter import SmartTextSplitter
+            from rag_core.chunking.text_splitter import SmartTextSplitter
             
             self.text_splitter = SmartTextSplitter(
                 chunk_size=1000,
@@ -77,7 +72,7 @@ class DocumentProcessingService:
     def _init_pinecone_uploader(self):
         """Initialise l'uploader Pinecone"""
         if self.pinecone_uploader is None:
-            from src.vectorstore.pinecone_handler import PineconeInferenceUploader
+            from rag_core.vectorstore.pinecone_handler import PineconeInferenceUploader
             
             api_key = getattr(settings, 'PINECONE_API_KEY', None)
             if not api_key:
