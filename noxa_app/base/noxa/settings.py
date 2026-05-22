@@ -160,19 +160,11 @@ LOGIN_REDIRECT_URL = '/'  # Redirect to home after login
 LOGOUT_REDIRECT_URL = '/login/'  # Redirect to login after logout
 
 # Media files
-# Robust Cloudinary configuration
-cloudinary_url = os.getenv('CLOUDINARY_URL', 'cloudinary://732974968223895:t6rzUL2tnGvmxzkelPF3zsVp-YY@dsupmimkx')
-if cloudinary_url:
-    CLOUDINARY_STORAGE = {
-        'CLOUDINARY_URL': cloudinary_url,
-    }
-  
-else:
-    CLOUDINARY_STORAGE = {
-        'CLOUD_NAME': os.getenv('CLOUDINARY_CLOUD_NAME', 'dsupmimkx'),
-        'API_KEY': os.getenv('CLOUDINARY_API_KEY', '732974968223895'),
-        'API_SECRET': os.getenv('CLOUDINARY_API_SECRET', ''),
-    }
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': os.getenv('CLOUDINARY_CLOUD_NAME', 'dsupmimkx'),
+    'API_KEY': os.getenv('CLOUDINARY_API_KEY', '732974968223895'),
+    'API_SECRET': os.getenv('CLOUDINARY_API_SECRET', 't6rzUL2tnGvmxzkelPF3zsVp-YY'),
+}
 
 # Modern Django 4.2+ Storage configuration
 STORAGES = {
@@ -187,7 +179,7 @@ STORAGES = {
 cloudinary.config(
     cloud_name=os.getenv('CLOUDINARY_CLOUD_NAME', 'dsupmimkx'),
     api_key=os.getenv('CLOUDINARY_API_KEY', '732974968223895'),
-    api_secret=os.getenv('CLOUDINARY_API_SECRET', '')
+    api_secret=os.getenv('CLOUDINARY_API_SECRET', 't6rzUL2tnGvmxzkelPF3zsVp-YY')
 )
 
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
