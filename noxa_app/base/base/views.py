@@ -701,25 +701,10 @@ def viewPdf(request, pk: str):
     
     pub = get_object_or_404(Publication, id=pk)
 
-    try:
-        # get the aws key from the aws url
-        s3_key = f'documents/memoires/{pub.file_url.split("/")[-1]}'
+    if not pub.file_url:
+        raise Http404("Document not found")
 
-        url = get_signed_url(s3_key, expiration=3600)
-
-        if url == None:
-            raise Http404("Document not found")
-
-        return HttpResponseRedirect(url)     
-    except Exception as e:
-        logger.error(f"Unexpected error serving PDF {pk}: {e}")
-        error_msg = str(e)
-        if "401" in error_msg or "403" in error_msg:
-            return HttpResponse(
-                f"Error {error_msg}: Cloudinary access denied. Please verify your CLOUDINARY_URL on Railway.",
-                status=401
-            )
-        raise Http404(f"Internal error while loading PDF: {error_msg}")
+    return HttpResponseRedirect(pub.file_url)
 
 
 @login_required
