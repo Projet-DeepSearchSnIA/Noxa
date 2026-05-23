@@ -33,8 +33,7 @@ from . import utils
 from django.db.models import Count
 from django.contrib.auth import get_user_model
 from django.conf import settings
-import cloudinary
-from .cloud_service import upload_file_cloudinary, upload_file_to_s3, get_signed_url
+from .cloud_service import upload_file_cloudinary
 import re
 import requests
 from chat.document_processing import get_document_processing_service
@@ -701,25 +700,10 @@ def viewPdf(request, pk: str):
     
     pub = get_object_or_404(Publication, id=pk)
 
-    try:
-        # get the aws key from the aws url
-        s3_key = f'documents/memoires/{pub.file_url.split("/")[-1]}'
+    if not pub.file_url:
+        raise Http404("Document not found")
 
-        url = get_signed_url(s3_key, expiration=3600)
-
-        if url == None:
-            raise Http404("Document not found")
-
-        return HttpResponseRedirect(url)     
-    except Exception as e:
-        logger.error(f"Unexpected error serving PDF {pk}: {e}")
-        error_msg = str(e)
-        if "401" in error_msg or "403" in error_msg:
-            return HttpResponse(
-                f"Error {error_msg}: Cloudinary access denied. Please verify your CLOUDINARY_URL on Railway.",
-                status=401
-            )
-        raise Http404(f"Internal error while loading PDF: {error_msg}")
+    return HttpResponseRedirect(pub.file_url)
 
 
 @login_required
@@ -1557,12 +1541,14 @@ def baki(request):
                try:
                     ext = os.path.splitext(file.name)[1]
                     formated_name = f"{course}_{class_level}_{academic_year}_semester-{semester}{ext}"
-                    # upload the file
-                    subject_url = upload_file_to_s3(file, f"documents/subjects/{formated_name}")
+                    subject_url = upload_file_cloudinary(
+                        file=file, file_type="raw",
+                        folder="documents/subjects",
+                        public_id=os.path.splitext(formated_name)[0]
+                    )
 
                     if not subject_url:
                         return JsonResponse({"error": "Error uploading file."}, status=400)
-                    # create the object in the database
                     subject = Subjects.objects.create(
                         name = file.name,
                         formated_name = formated_name,
@@ -1577,16 +1563,17 @@ def baki(request):
                         author = request.user,
                     )
 
-
-                    # If correction file is provided, upload it too
                     if correction_file:
                         ext = os.path.splitext(correction_file.name)[1]
                         correction_formated_name = f"{course}_{class_level}_{academic_year}_semester-{semester}_correction{ext}"
-                        correction_url = upload_file_to_s3(correction_file, f"documents/corrections/{correction_formated_name}")
+                        correction_url = upload_file_cloudinary(
+                            file=correction_file, file_type="raw",
+                            folder="documents/corrections",
+                            public_id=os.path.splitext(correction_formated_name)[0]
+                        )
 
                         if not correction_url:
                             return JsonResponse({"error": "Error uploading correction file."}, status=400)
-                        # create correction object
                         Corrections.objects.create(
                             subject = subject,
                             author = request.user,
@@ -1630,20 +1617,11 @@ def viewSubject(request, pk: str):
     :type pk: str
     """
     subject = get_object_or_404(Subjects, id=pk)
-    try:
-        # get the aws key from the aws url
-        s3_key = f'documents/subjects/{subject.aws_url.split("/")[-1]}'
 
-        url = get_signed_url(s3_key, expiration=3600)
+    if not subject.aws_url:
+        raise Http404("Subject not found")
 
-        if url == None:
-            raise Http404("Subject not found")
-
-        return HttpResponseRedirect(url)     
-    except Exception as e:
-        logger.error(f"Unexpected error serving PDF {pk}: {e}")
-        error_msg = str(e)
-        raise Http404(f"Internal error while loading PDF: {error_msg}")
+    return HttpResponseRedirect(subject.aws_url)
     
 
 def viewCorrection(request, pk: str):
@@ -1655,20 +1633,11 @@ def viewCorrection(request, pk: str):
     :type pk: str
     """
     subject = get_object_or_404(Corrections, id=pk)
-    try:
-        # get the aws key from the aws url
-        s3_key = f'documents/corrections/{subject.aws_url.split("/")[-1]}'
 
-        url = get_signed_url(s3_key, expiration=3600)
+    if not subject.aws_url:
+        raise Http404("Document not found")
 
-        if url == None:
-            raise Http404("Document not found")
-
-        return HttpResponseRedirect(url)     
-    except Exception as e:
-        logger.error(f"Unexpected error serving PDF {pk}: {e}")
-        error_msg = str(e)
-        raise Http404(f"Internal error while loading PDF: {error_msg}")
+    return HttpResponseRedirect(subject.aws_url)
 
 
 def ajax_filter_courses(request):
@@ -1815,8 +1784,11 @@ def add_correction(request, pk: str):
             else:
                 ext = os.path.splitext(file.name)[1]
                 formated_name = f"{subject.formated_name}_correction{ext}"
-                # upload the file
-                correction_url = upload_file_to_s3(file, f"documents/corrections/{formated_name}")
+                correction_url = upload_file_cloudinary(
+                    file=file, file_type="raw",
+                    folder="documents/corrections",
+                    public_id=os.path.splitext(formated_name)[0]
+                )
 
                 if not correction_url:
                     return JsonResponse({"error": "Error uploading file."}, status=400)
