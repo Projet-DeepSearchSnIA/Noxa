@@ -15,16 +15,6 @@ git clone https://github.com/Projet-DeepSearchSnIA/rag-core.git
 git clone https://github.com/Projet-DeepSearchSnIA/noxa.git
 ```
 
-### 2. Créer un environnement virtuel 
-
-```bash
-cd noxa/
-python -m venv .venv
-.venv\Scripts\activate        # Windows
-# ou
-source .venv/bin/activate     # Linux / Mac
-```
-
 ### 3. Installer rag-core dans le venv de Noxa
 
 ```bash
