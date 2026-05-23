@@ -14,25 +14,21 @@ import os
 import dj_database_url
 from pathlib import Path
 import cloudinary
-import cloudinary.uploader
-import cloudinary.api
+from dotenv import load_dotenv
 
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
-# Charge les variables d'environnement depuis .env si présent
-from dotenv import load_dotenv
-load_dotenv()
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-8#-vp#m#wl*7@5)v6$x9hy-_bpg80axt1p$(hmc5x__nhvvnx5'
+SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-8#-vp#m#wl*7@5)v6$x9hy-_bpg80axt1p$(hmc5x__nhvvnx5')
 
-DEBUG = os.getenv("DEBUG") 
+DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '.railway.app']
 
@@ -99,11 +95,6 @@ WSGI_APPLICATION = 'noxa.wsgi.application'
 # Database configuration
 # Railway provide DATABASE_URL by We use Neon as fallback for production.
 DATABASES = {
-    # en local, garder sqlite3 par défaut
-    # 'default': {
-    #     'ENGINE': 'django.db.backends.sqlite3',
-    #     'NAME': BASE_DIR / 'db.sqlite3',
-    # }
     'default': dj_database_url.config(
         default=os.getenv('DATABASE_URL', ''),
         conn_max_age=600
@@ -164,9 +155,9 @@ LOGOUT_REDIRECT_URL = '/login/'  # Redirect to login after logout
 
 # Media files
 CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': os.getenv('CLOUDINARY_CLOUD_NAME', 'dsupmimkx'),
-    'API_KEY': os.getenv('CLOUDINARY_API_KEY', '732974968223895'),
-    'API_SECRET': os.getenv('CLOUDINARY_API_SECRET', 't6rzUL2tnGvmxzkelPF3zsVp-YY'),
+    'CLOUD_NAME': os.getenv('CLOUDINARY_CLOUD_NAME'),
+    'API_KEY': os.getenv('CLOUDINARY_API_KEY'),
+    'API_SECRET': os.getenv('CLOUDINARY_API_SECRET'),
 }
 
 # Modern Django 4.2+ Storage configuration
@@ -180,12 +171,10 @@ STORAGES = {
 }
 
 cloudinary.config(
-    cloud_name=os.getenv('CLOUDINARY_CLOUD_NAME', 'dsupmimkx'),
-    api_key=os.getenv('CLOUDINARY_API_KEY', '732974968223895'),
-    api_secret=os.getenv('CLOUDINARY_API_SECRET', 't6rzUL2tnGvmxzkelPF3zsVp-YY')
+    cloud_name=os.getenv('CLOUDINARY_CLOUD_NAME'),
+    api_key=os.getenv('CLOUDINARY_API_KEY'),
+    api_secret=os.getenv('CLOUDINARY_API_SECRET'),
 )
-
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
@@ -197,13 +186,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 # OpenAI API
-OPENAI_API_KEY = 'openai-api-key'
-
-# RAG Configuration
-from dotenv import load_dotenv
-import os
-
-
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 
 # HuggingFace
 HF_TOKEN = os.getenv('HF_TOKEN', None)
