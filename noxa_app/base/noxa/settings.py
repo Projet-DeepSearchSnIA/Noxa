@@ -21,6 +21,10 @@ import cloudinary.api
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Charge les variables d'environnement depuis .env si présent
+from dotenv import load_dotenv
+load_dotenv()
+
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
@@ -199,8 +203,7 @@ OPENAI_API_KEY = 'openai-api-key'
 from dotenv import load_dotenv
 import os
 
-# Charge les variables d'environnement depuis .env si présent
-load_dotenv()
+
 
 # HuggingFace
 HF_TOKEN = os.getenv('HF_TOKEN', None)
