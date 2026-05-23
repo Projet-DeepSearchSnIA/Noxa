@@ -1,41 +1,7 @@
-"""
-Service RAG pour le chatbot NOXA
-Gère la récupération de documents et la génération de réponses
-En utilisant exclusivement le moteur situé dans le dossier src/
-"""
 import logging
 from typing import List, Dict, Optional
-from dataclasses import dataclass, field
 
-from django.conf import settings
-
-# Configuration du logging
 logger = logging.getLogger('services.rag')
-
-
-@dataclass
-class RetrievedChunk:
-    """Représente un chunk récupéré avec son score de pertinence"""
-    publication_id: int
-    publication_title: str
-    chunk_index: int
-    content: str
-    page_number: Optional[int]
-    relevance_score: float
-    metadata: Dict = field(default_factory=dict)
-
-
-@dataclass
-class RAGResponse:
-    """Réponse complète du pipeline RAG"""
-    answer: str
-    sources: List[RetrievedChunk]
-    query_embedding_time: float
-    retrieval_time: float
-    generation_time: float
-    total_time: float
-    metadata: Dict = field(default_factory=dict)
-    extra_info: Dict = field(default_factory=dict)
 
 
 class RAGService:
