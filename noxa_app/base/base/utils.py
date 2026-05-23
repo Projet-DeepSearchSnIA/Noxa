@@ -98,7 +98,7 @@ class NotificationManager:
             message=f"{publisher.username} published '{publication.theme}'",
             action_url=reverse('base:publication', kwargs={'pk': publication.id})
         )
-    
+
 
 
 
