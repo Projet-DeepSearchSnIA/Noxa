@@ -102,7 +102,7 @@ DATABASES = {
     #     'NAME': BASE_DIR / 'db.sqlite3',
     # }
     'default': dj_database_url.config(
-        default=os.getenv('DATABASE_URL', 'postgresql://neondb_owner:npg_rleNsy85vcMO@ep-lingering-poetry-aiichweg-pooler.c-4.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require'),
+        default=os.getenv('DATABASE_URL', ''),
         conn_max_age=600
     )
 }
