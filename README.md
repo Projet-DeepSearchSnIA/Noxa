@@ -8,34 +8,53 @@ NOXA utilise [rag-core](https://github.com/Projet-DeepSearchSnIA/rag-core) comme
 
 ## Installation
 
-### 1. Cloner les deux repos
+### Cloner les deux repos
 
 ```bash
 git clone https://github.com/Projet-DeepSearchSnIA/rag-core.git
 git clone https://github.com/Projet-DeepSearchSnIA/noxa.git
 ```
 
-### 3. Installer rag-core dans le venv de Noxa
+### Créer et activer un environnement virtuel
+
+```bash
+cd noxa
+python -m venv env
+
+# Linux / macOS
+source env/bin/activate
+# Windows
+env\Scripts\activate
+```
+
+### Installer rag-core dans le venv de Noxa
 
 ```bash
 pip install -e ../rag-core
 ```
 
-### 4. Installer les dépendances de NOXA
+### Installer les dépendances de NOXA
 
 ```bash
 pip install -r requirements.txt
 ```
 
+### Configurer les variables d'environnement
 
-### 5. Configurer les variables d'environnement
+Copier `.env.example` en `.env` et remplir les valeurs (Django, base de données, Cloudinary, Pinecone, HuggingFace). Le faire pour les deux repos.
 
-Le faire pour les deux repo
+```bash
+cp .env.example .env
+```
 
-### 6. Lancer les migrations et le serveur
+### Lancer les migrations et le serveur
 
 ```bash
 cd noxa_app/base/
 python manage.py migrate
+python manage.py createsuperuser   # première fois uniquement
 python manage.py runserver
 ```
+
+L'application est accessible sur http://127.0.0.1:8000  
+L'interface admin sur http://127.0.0.1:8000/admin
