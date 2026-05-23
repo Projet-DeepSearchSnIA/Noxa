@@ -596,7 +596,7 @@ def createPublication(request):
                     pdf_path=temp_path,
                     uploaded_url=file_url,
                     metadata=default_metadata,
-                    document_name_without_ext=file_name_without_extension
+                    document_name_without_ext=theme
                     )
                 print("Pinecone processing completed")
 

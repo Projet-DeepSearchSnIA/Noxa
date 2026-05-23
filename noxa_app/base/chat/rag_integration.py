@@ -188,13 +188,16 @@ class DjangoRAGService:
         retrieved_chunks = []
         for chunk in enriched_chunks:
             chunk_dict = chunk.to_dict()
+            doc_name = chunk_dict['document_name']
+            if not doc_name or '\\' in doc_name or doc_name.startswith('/tmp') or doc_name.startswith('tmp'):
+                doc_name = chunk_dict.get('document_title') or doc_name
             retrieved_chunks.append({
                 'id': chunk_dict['chunk_id'],
                 'score': chunk_dict['rerank_score'] or chunk_dict['score'],
                 'text': chunk_dict['text'],
                 'metadata': {
-                    'document_name': chunk_dict['document_name'],
-                    'document_path': chunk_dict['document_name'],
+                    'document_name': doc_name,
+                    'document_path': doc_name,
                     'page_numbers': chunk_dict['page_numbers'],
                     'formulas_latex': chunk_dict['formulas_latex'],
                     'image_paths': chunk_dict['image_paths'],
@@ -246,10 +249,13 @@ class DjangoRAGService:
                     except (ValueError, IndexError):
                         page_val = None
 
+            src_name = chunk_dict['document_name']
+            if not src_name or '\\' in src_name or src_name.startswith('/tmp') or src_name.startswith('tmp'):
+                src_name = chunk_dict.get('document_title') or src_name
             sources.append(RetrievedChunk(
                 publication_id=int(pub_id) if pub_id else None,
                 attachment_id=int(att_id) if att_id else None,
-                publication_title=chunk_dict['document_name'],
+                publication_title=src_name,
                 chunk_index=0,
                 content=chunk_dict['text'][:500],
                 page_number=page_val,

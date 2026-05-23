@@ -208,17 +208,23 @@ LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'handlers': {
-        'file': {
+        'rag_file': {
             'level': 'INFO',
             'class': 'logging.FileHandler',
             'filename': 'rag.log',
+            'encoding': 'utf-8',
         },
     },
     'loggers': {
         'services.rag': {
-            'handlers': ['file'],
+            'handlers': ['rag_file'],
             'level': 'INFO',
-            'propagate': True,
+            'propagate': False,
+        },
+        'services.document_processing': {
+            'handlers': ['rag_file'],
+            'level': 'INFO',
+            'propagate': False,
         },
     },
 }
