@@ -36,6 +36,7 @@ from django.conf import settings
 from .cloud_service import upload_file_cloudinary
 import re
 import requests
+import threading
 from chat.document_processing import get_document_processing_service
 import tempfile
 
@@ -580,38 +581,33 @@ def createPublication(request):
 
             messages.success(request, 'Publication created successfully!')
             
-            # Process document for Pinecone
-            temp_path = None
-            try:
-                print("Starting processing for pinecone")
-                # Créer le fichier temporaire depuis le fichier Django réinitialisé
-                with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
-                    tmp.write(file_content)
-                    temp_path = tmp.name
-                print(f"File saved at: {temp_path}")
-                
-                # Process the document for the vectorial database
-                processing_service = get_document_processing_service()
-                processing_service.process_pdf(
-                    pdf_path=temp_path,
-                    uploaded_url=file_url,
-                    metadata=default_metadata,
-                    document_name_without_ext=theme
-                    )
-                print("Pinecone processing completed")
+            # Process document for Pinecone in background thread
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
+                tmp.write(file_content)
+                temp_path = tmp.name
 
-            except Exception as e:
-                print(f"Error processing document: {e}")
-                messages.warning(request, f"Document publié mais erreur lors de l'indexation: {e}")
-            
-            finally:
-                # Nettoyer le fichier temporaire
-                if temp_path and os.path.exists(temp_path):
+            def index_in_background(path, url, meta, name):
+                try:
+                    processing_service = get_document_processing_service()
+                    processing_service.process_pdf(
+                        pdf_path=path,
+                        uploaded_url=url,
+                        metadata=meta,
+                        document_name_without_ext=name
+                    )
+                except Exception as e:
+                    print(f"Pinecone indexing error: {e}")
+                finally:
                     try:
-                        os.remove(temp_path)
-                        print(f"Temp file {temp_path} deleted successfully")
-                    except Exception as e:
-                        print(f"Error deleting temp file: {e}")
+                        os.remove(path)
+                    except Exception:
+                        pass
+
+            threading.Thread(
+                target=index_in_background,
+                args=(temp_path, file_url, default_metadata, theme),
+                daemon=True
+            ).start()
             
             return redirect('base:publication', pk=publication.pk)
         else:
