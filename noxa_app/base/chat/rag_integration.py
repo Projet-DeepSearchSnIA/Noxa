@@ -177,12 +177,6 @@ class DjangoRAGService:
                     filter=None # Try without filter
                 )
             
-            # Fallback for namespace (if __default__ returns nothing, try empty string)
-            if not enriched_chunks and namespace == '__default__':
-                logger.info("⚠️ No results in '__default__' namespace. Trying empty namespace...")
-                # We need to temporarily change the retriever namespace or call query directly
-                # For now, let's just log this possibility
-            
             retrieval_time = (time.time() - retrieval_start) * 1000
             logger.info(f"✅ {len(enriched_chunks)} chunks récupérés en {retrieval_time:.2f}ms (namespace: {namespace})")
         except Exception as e:
