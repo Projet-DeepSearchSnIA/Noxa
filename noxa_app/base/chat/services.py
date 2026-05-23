@@ -1,6 +1,8 @@
 import logging
 from typing import List, Dict, Optional
 
+from chat.rag_integration import RAGResponse
+
 logger = logging.getLogger('services.rag')
 
 
