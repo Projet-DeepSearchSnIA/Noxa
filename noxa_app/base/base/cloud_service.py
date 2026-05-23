@@ -1,33 +1,11 @@
-from dotenv import load_dotenv
 import os
-from pathlib import Path
 import boto3
 from botocore.exceptions import NoCredentialsError, ClientError
 
-# Charger le .env (priorité aux variables d'environnement système)
-# On ne charge le .env que si on n'est pas déjà dans un environnement configuré (ex: local dev)
-if not os.getenv('AWS_ACCESS_KEY_ID'):
-    BASE_DIR = Path(__file__).resolve().parent
-    print(f"BASE_DIR set to: {BASE_DIR}")
-    env_path = BASE_DIR / '.env'
-    if env_path.exists():
-        load_dotenv(env_path)
-    load_dotenv() # Fallback to CWD .env
-
-AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID') 
+AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
 AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
 region = os.getenv('AWS_REGION', 'eu-north-1')
-bucket_name = os.getenv('BUCKET_NAME', 'nlp-rag-bucket') # nlp-rag-bucket
-
-# Debug (safe version)
-if os.getenv('DEBUG', 'True') == 'True':
-    print("=" * 60)
-    print("[DEBUG] AWS Service Configuration")
-    print(f"[KEY] AWS_ACCESS_KEY_ID: {'FOUND' if AWS_ACCESS_KEY_ID else 'NOT FOUND'}")
-    print(f"[KEY] AWS_SECRET_ACCESS_KEY: {'FOUND' if AWS_SECRET_ACCESS_KEY else 'NOT FOUND'}")
-    print(f"[BUCKET] Bucket name: {bucket_name}")
-    print(f"[REGION] Region: {region}")
-    print("=" * 60)
+bucket_name = os.getenv('BUCKET_NAME', 'nlp-rag-bucket')
 
 
 s3 = boto3.client(
@@ -127,13 +105,7 @@ def upload_file_cloudinary(file_type="image", file=None, public_id=None, folder=
     :param kwargs: Additional parameters for Cloudinary uploader
     :return: URL of the uploaded file or None
     """
-    import cloudinary
     import cloudinary.uploader
-    from cloudinary.utils import cloudinary_url
-    from .cloudinary_config import configure_cloudinary
-
-    # Configuration
-    configure_cloudinary()
 
     try:
         # Prepare upload options
