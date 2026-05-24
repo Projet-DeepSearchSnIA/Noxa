@@ -208,22 +208,35 @@ LLM_MAX_TOKENS = int(os.getenv('LLM_MAX_TOKENS', '1000'))
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+    'formatters': {
+        'pipeline': {
+            'format': '{asctime} [{levelname}] {name}: {message}',
+            'style': '{',
+            'datefmt': '%H:%M:%S',
+        },
+    },
     'handlers': {
+        'console': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
+            'formatter': 'pipeline',
+        },
         'rag_file': {
             'level': 'INFO',
             'class': 'logging.FileHandler',
             'filename': 'rag.log',
             'encoding': 'utf-8',
+            'formatter': 'pipeline',
         },
     },
     'loggers': {
         'services.rag': {
-            'handlers': ['rag_file'],
+            'handlers': ['console', 'rag_file'],
             'level': 'INFO',
             'propagate': False,
         },
         'services.document_processing': {
-            'handlers': ['rag_file'],
+            'handlers': ['console', 'rag_file'],
             'level': 'INFO',
             'propagate': False,
         },
