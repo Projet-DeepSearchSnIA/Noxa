@@ -161,6 +161,9 @@
                             {% if pub.page_count %}
                             <span class="pages">{{ pub.page_count }} pages</span>
                             {% endif %}
+                            <span class="rag-pill rag-pill--{{ pub.indexing_status }}">
+                                <span class="rag-pill__dot"></span>{% if pub.indexing_status == 'pending' %}En attente{% elif pub.indexing_status == 'extracting' or pub.indexing_status == 'chunking' or pub.indexing_status == 'uploading' %}Indexation…{% elif pub.indexing_status == 'indexed' %}Dans le chat{% elif pub.indexing_status == 'failed' %}Échec{% else %}–{% endif %}
+                            </span>
                         </div>
                     </div>
                     

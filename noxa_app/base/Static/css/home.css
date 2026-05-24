@@ -328,3 +328,43 @@
     background-color: #f5f5f5;
     color: #000000;
 }
+/* ── Statut d'indexation RAG ── */
+.rag-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.72em;
+    padding: 2px 7px;
+    border-radius: 20px;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    vertical-align: middle;
+}
+.rag-pill__dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+/* couleurs selon statut */
+.rag-pill--pending    { background: #e3f2fd; color: #1565c0; }
+.rag-pill--pending    .rag-pill__dot { background: #1976d2; }
+
+.rag-pill--extracting,
+.rag-pill--chunking,
+.rag-pill--uploading  { background: #e8f0fe; color: #1a56db; }
+.rag-pill--extracting .rag-pill__dot,
+.rag-pill--chunking   .rag-pill__dot,
+.rag-pill--uploading  .rag-pill__dot { background: #1a56db; animation: rag-blink 1.2s ease-in-out infinite; }
+
+.rag-pill--indexed    { background: #e8f5e9; color: #2e7d32; }
+.rag-pill--indexed    .rag-pill__dot { background: #43a047; }
+
+.rag-pill--failed     { background: #fce4ec; color: #b71c1c; }
+.rag-pill--failed     .rag-pill__dot { background: #e53935; }
+
+@keyframes rag-blink {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.25; }
+}
