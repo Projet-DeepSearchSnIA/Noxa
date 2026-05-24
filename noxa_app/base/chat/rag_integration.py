@@ -166,17 +166,7 @@ class DjangoRAGService:
                 rerank=True,
                 filter=metadata_filter
             )
-            
-            # Fallback for legacy documents or empty results with filter
-            if not enriched_chunks and metadata_filter:
-                logger.info("⚠️ No results with filter. Trying broader search (legacy docs?)...")
-                enriched_chunks = self.retriever.retrieve(
-                    query=query,
-                    top_k=top_k,
-                    rerank=True,
-                    filter=None # Try without filter
-                )
-            
+
             retrieval_time = (time.time() - retrieval_start) * 1000
             logger.info(f"✅ {len(enriched_chunks)} chunks récupérés en {retrieval_time:.2f}ms (namespace: {namespace})")
         except Exception as e:
