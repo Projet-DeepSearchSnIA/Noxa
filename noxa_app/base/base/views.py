@@ -586,14 +586,18 @@ def createPublication(request):
                 tmp.write(file_content)
                 temp_path = tmp.name
 
-            def index_in_background(path, url, meta, name):
+            user_id_for_thread = request.user.id
+
+            def index_in_background(path, url, meta, name, uid):
                 try:
                     processing_service = get_document_processing_service()
                     processing_service.process_pdf(
                         pdf_path=path,
                         uploaded_url=url,
                         metadata=meta,
-                        document_name_without_ext=name
+                        document_name_without_ext=name,
+                        user_id=uid,
+                        is_public=True,
                     )
                 except Exception as e:
                     print(f"Pinecone indexing error: {e}")
@@ -605,7 +609,7 @@ def createPublication(request):
 
             threading.Thread(
                 target=index_in_background,
-                args=(temp_path, file_url, default_metadata, theme),
+                args=(temp_path, file_url, default_metadata, theme, user_id_for_thread),
                 daemon=True
             ).start()
             
