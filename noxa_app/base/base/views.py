@@ -600,7 +600,7 @@ def createPublication(request):
                         is_public=True,
                     )
                 except Exception as e:
-                    print(f"Pinecone indexing error: {e}")
+                    logger.error("erreur indexation Pinecone: %s", e, exc_info=True)
                 finally:
                     try:
                         os.remove(path)
@@ -615,7 +615,7 @@ def createPublication(request):
             
             return redirect('base:publication', pk=publication.pk)
         else:
-            messages.error("Veuillez charger un fichier")
+            messages.error(request, "Veuillez charger un fichier")
             return render(request, 'base/publication_form.html')
     
     # Handle GET request

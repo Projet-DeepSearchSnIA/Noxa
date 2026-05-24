@@ -118,7 +118,7 @@ def conversation_view(request, conversation_id):
                 unique_docs[name] = {
                     'id': f"att_{source.attachment.id}",
                     'title': name,
-                    'url': source.attachment.file.url,
+                    'url': source.attachment.file.url if source.attachment.file else '#',
                     'icon': 'pdf' if name.lower().endswith('.pdf') else 'file'
                 }
 
@@ -612,8 +612,9 @@ def conversation_history(request, conversation_id):
 
         if msg.role == 'assistant':
             msg_data['sources'] = [{
-                'publication_id': s.publication.id,
-                'publication_title': s.publication.theme,
+                'publication_id': s.publication.id if s.publication else None,
+                'publication_title': (s.publication.theme if s.publication
+                                      else (s.attachment.filename if s.attachment else 'Document')),
                 'page_number': s.page_number,
                 'relevance_score': round(s.relevance_score, 2),
                 'excerpt': s.excerpt[:200] + '...' if len(s.excerpt) > 200 else s.excerpt
