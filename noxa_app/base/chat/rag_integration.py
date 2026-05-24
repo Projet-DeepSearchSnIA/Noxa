@@ -88,7 +88,7 @@ class DjangoRAGService:
 
             self.retriever = PineconeRetriever(
                 api_key=pinecone_key,
-                index_name=getattr(settings, 'PINECONE_INDEX_NAME', 'noxa-rag'),
+                index_name=getattr(settings, 'PINECONE_INDEX_NAME', 'rag-test2'),
                 embed_model=getattr(settings, 'PINECONE_EMBED_MODEL', 'multilingual-e5-large'),
                 rerank_model=getattr(settings, 'PINECONE_RERANK_MODEL', 'bge-reranker-v2-m3'),
                 namespace=getattr(settings, 'PINECONE_NAMESPACE', '__default__')
