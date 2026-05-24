@@ -45,7 +45,6 @@ llama_prompt.txt
 # Données RAG
 *.pdf
 *.txt
-!requirements.txt
 *.json
 *.pkl
 *.npy
