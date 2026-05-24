@@ -134,6 +134,8 @@ class DocumentProcessingService:
             metadata = {}
         metadata['user_id'] = user_id
         metadata['is_public'] = is_public
+        if publication_id is not None:
+            metadata['publication_id'] = publication_id
         
         try:
             # Phase 1: Extraction OCR
