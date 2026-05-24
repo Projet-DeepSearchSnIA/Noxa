@@ -201,14 +201,82 @@ JavaScript Dependencies:
             <p class="publication__container--control__card--title">Paper info</p>
             <div class="publication__container--control__card--content">
                 <p>Category: <a href="">{{ pub.topic}}</a></p>
-                <p>Tags: 
+                <p>Tags:
                     {% for tag in pub.tags.all %}
                         {% cycle 'color1' 'color2' 'color3' 'color4' 'color5' 'color6' as tag_colors silent %}
                         <a href="{% url 'base:tag' tag.id %}" class="tag-box {{ tag_colors }}">{{ tag.name }}</a>
                     {% endfor %}
                 </p>
+                <p id="rag-status-line" style="margin-top:8px; font-size:0.82em; display:flex; align-items:center; gap:6px;">
+                    <span id="rag-status-dot" style="
+                        display:inline-block; width:7px; height:7px; border-radius:50%; flex-shrink:0;
+                        background:{% if pub.indexing_status == 'indexed' %}#4caf50{% elif pub.indexing_status == 'failed' %}#e53935{% else %}#1976d2{% endif %};
+                        {% if pub.indexing_status not in 'indexed,failed' %}animation: rag-pulse 1.4s ease-in-out infinite;{% endif %}
+                    "></span>
+                    <span id="rag-status-text" style="color:#666;">
+                        {% if pub.indexing_status == 'pending' %}En attente d'indexation
+                        {% elif pub.indexing_status == 'extracting' %}Extraction du texte…
+                        {% elif pub.indexing_status == 'chunking' %}Découpage en cours…
+                        {% elif pub.indexing_status == 'uploading' %}Indexation en cours…
+                        {% elif pub.indexing_status == 'indexed' %}Disponible dans le chat
+                        {% elif pub.indexing_status == 'failed' %}Échec de l'indexation
+                        {% endif %}
+                    </span>
+                </p>
             </div>
         </div>
+
+        <style>
+            @keyframes rag-pulse {
+                0%, 100% { opacity: 1; }
+                50%       { opacity: 0.3; }
+            }
+        </style>
+
+        <script>
+        (function () {
+            var FINAL = ['indexed', 'failed'];
+            var current = '{{ pub.indexing_status }}';
+            if (FINAL.indexOf(current) !== -1) return;
+
+            var statusUrl = '{% url "base:publication-indexing-status" pub.id %}';
+            var dot  = document.getElementById('rag-status-dot');
+            var text = document.getElementById('rag-status-text');
+
+            var labels = {
+                pending:    "En attente d'indexation",
+                extracting: "Extraction du texte…",
+                chunking:   "Découpage en cours…",
+                uploading:  "Indexation en cours…",
+                indexed:    "Disponible dans le chat",
+                failed:     "Échec de l'indexation"
+            };
+            var colors = {
+                pending: '#1976d2', extracting: '#1976d2',
+                chunking: '#1976d2', uploading: '#1976d2',
+                indexed: '#4caf50', failed: '#e53935'
+            };
+
+            function poll() {
+                fetch(statusUrl)
+                    .then(function(r){ return r.json(); })
+                    .then(function(data){
+                        var s = data.status;
+                        dot.style.background = colors[s] || '#1976d2';
+                        text.textContent = labels[s] || s;
+
+                        if (FINAL.indexOf(s) !== -1) {
+                            dot.style.animation = 'none';
+                        } else {
+                            setTimeout(poll, 3000);
+                        }
+                    })
+                    .catch(function(){ setTimeout(poll, 5000); });
+            }
+
+            setTimeout(poll, 3000);
+        })();
+        </script>
 
         <div class="publication__container--control__card access">
             <p class="publication__container--control__card--title">Access paper</p>

@@ -85,6 +85,18 @@ class DocumentProcessingService:
             )
             logger.info("✅ Pinecone Uploader initialisé")
     
+    def _set_status(self, publication_id: Optional[int], status: str):
+        """Met à jour indexing_status en base depuis n'importe quel thread."""
+        if not publication_id:
+            return
+        try:
+            from django.db import close_old_connections
+            close_old_connections()
+            from base.models import Publication
+            Publication.objects.filter(id=publication_id).update(indexing_status=status)
+        except Exception as e:
+            logger.warning("impossible de mettre à jour le statut (%s): %s", status, e)
+
     def process_pdf(
         self,
         pdf_path: str,
@@ -93,7 +105,8 @@ class DocumentProcessingService:
         upload_to_pinecone: bool = True,
         user_id: Optional[int] = None,
         is_public: bool = False,
-        document_name_without_ext: str = ""
+        document_name_without_ext: str = "",
+        publication_id: Optional[int] = None
     ) -> Dict:
         """
         Traite un PDF complet: extraction → chunking → upload Pinecone
@@ -124,19 +137,19 @@ class DocumentProcessingService:
         
         try:
             # Phase 1: Extraction OCR
-            logger.info("📄 Phase 1: Extraction OCR")
+            logger.info("Phase 1: Extraction OCR — %s", pdf_path)
+            self._set_status(publication_id, 'extracting')
             self._init_pdf_extractor()
-            
+
             extracted_doc = self.pdf_extractor.extract_pdf(
                 pdf_path,
                 uploaded_url=uploaded_url,
                 default_metadata=metadata,
                 document_name_without_ext=document_name_without_ext
             )
-            
-            # Sauvegarde le document extrait
+
             json_path = self.pdf_extractor.save_document(extracted_doc)
-            
+
             stats['extraction'] = {
                 'document_id': extracted_doc.document_id,
                 'pages': extracted_doc.stats.total_pages,
@@ -147,19 +160,20 @@ class DocumentProcessingService:
                 'processing_time': extracted_doc.stats.processing_time_seconds,
                 'json_path': json_path
             }
-            
-            logger.info(f"✅ Extraction terminée: {extracted_doc.stats.total_pages} pages")
-            
+
+            logger.info("Extraction terminée — %d pages, %d blocs",
+                        extracted_doc.stats.total_pages, extracted_doc.stats.total_text_blocks)
+
             # Phase 2: Chunking
-            logger.info("✂️  Phase 2: Chunking")
+            logger.info("Phase 2: Chunking")
+            self._set_status(publication_id, 'chunking')
             self._init_text_splitter()
-            
+
             chunks = self.text_splitter.split_document(extracted_doc)
-            
-            # Sauvegarde les chunks
+
             chunks_path = self.chunked_dir / f"{extracted_doc.document_id}_chunks.json"
             self.text_splitter.save_chunks(chunks, str(chunks_path))
-            
+
             stats['chunking'] = {
                 'total_chunks': len(chunks),
                 'avg_chunk_size': sum(c.char_count for c in chunks) / len(chunks) if chunks else 0,
@@ -167,36 +181,39 @@ class DocumentProcessingService:
                 'chunks_with_formulas': sum(1 for c in chunks if c.metadata.get('has_formulas')),
                 'chunks_path': str(chunks_path)
             }
-            
-            logger.info(f"✅ Chunking terminé: {len(chunks)} chunks")
-            
+
+            logger.info("Chunking terminé — %d chunks", len(chunks))
+
             # Phase 3: Upload Pinecone
             if upload_to_pinecone:
-                logger.info("☁️  Phase 3: Upload vers Pinecone")
+                logger.info("Phase 3: Upload vers Pinecone")
+                self._set_status(publication_id, 'uploading')
                 self._init_pinecone_uploader()
-                
+
                 upload_stats = self.pinecone_uploader.upload_chunks_from_json(
                     str(chunks_path),
                     namespace=getattr(settings, 'PINECONE_NAMESPACE', '__default__')
                 )
-                
-                stats['upload'] = upload_stats
-                logger.info(f"✅ Upload terminé: {upload_stats['uploaded']} chunks")
-            
-            logger.info("🎉 Traitement complet terminé avec succès!")
 
-            # Phase 4 : Supprimer tous les fichiers temporelles générés
+                stats['upload'] = upload_stats
+                logger.info("Upload terminé — %d/%d chunks",
+                            upload_stats['uploaded'], upload_stats['total'])
+
+            self._set_status(publication_id, 'indexed')
+            logger.info("Traitement complet terminé avec succès")
+
+            # Phase 4 : Nettoyage
             try:
                 if os.path.exists(json_path):
                     os.remove(json_path)
                 if os.path.exists(chunks_path):
                     os.remove(chunks_path)
-                logger.info("🧹 Fichiers temporaires supprimés")
             except Exception as e:
-                logger.warning(f"⚠️  Impossible de supprimer les fichiers temporaires: {e}")
-            
+                logger.warning("impossible de supprimer les fichiers temporaires: %s", e)
+
         except Exception as e:
-            logger.error(f"❌ Erreur lors du traitement: {e}")
+            self._set_status(publication_id, 'failed')
+            logger.error("erreur lors du traitement: %s", e)
             stats['errors'].append(str(e))
             raise
         

@@ -588,7 +588,9 @@ def createPublication(request):
 
             user_id_for_thread = request.user.id
 
-            def index_in_background(path, url, meta, name, uid):
+            pub_id_for_thread = publication.pk
+
+            def index_in_background(path, url, meta, name, uid, pub_id):
                 try:
                     processing_service = get_document_processing_service()
                     processing_service.process_pdf(
@@ -598,6 +600,7 @@ def createPublication(request):
                         document_name_without_ext=name,
                         user_id=uid,
                         is_public=True,
+                        publication_id=pub_id,
                     )
                 except Exception as e:
                     logger.error("erreur indexation Pinecone: %s", e, exc_info=True)
@@ -609,7 +612,7 @@ def createPublication(request):
 
             threading.Thread(
                 target=index_in_background,
-                args=(temp_path, file_url, default_metadata, theme, user_id_for_thread),
+                args=(temp_path, file_url, default_metadata, theme, user_id_for_thread, pub_id_for_thread),
                 daemon=True
             ).start()
             
@@ -1850,3 +1853,9 @@ def add_comment(request, pk):
             return JsonResponse({"error": str(e)}, status=400)
 
     return redirect(request.META.get("HTTP_REFERER", "/"))
+
+
+def publication_indexing_status(request, pk):
+    """Endpoint AJAX — retourne le statut d'indexation d'une publication."""
+    pub = get_object_or_404(Publication, pk=pk)
+    return JsonResponse({'status': pub.indexing_status})

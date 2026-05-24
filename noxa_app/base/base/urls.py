@@ -36,6 +36,7 @@ urlpatterns = [
     path('create-class/', views.create_class, name='create_class'),
     path('create-course/', views.create_course, name='create_course'),
     path('baki/', views.baki, name="baki"),
+    path('api/publication/<str:pk>/indexing-status/', views.publication_indexing_status, name='publication-indexing-status'),
     path('ajax/filter-courses/', views.ajax_filter_courses, name='ajax_filter_courses'),
     path('ajax/filter-courses-subjects/', views.ajax_filter_courses_on_subjects, name='ajax_filter_courses_subjects'),
     path('subjects/<str:pk>/', views.subject_details, name="subject-details"),

@@ -34,6 +34,16 @@ class Tag(models.Model):
 
 
 class Publication(models.Model):
+
+    INDEXING_STATUS_CHOICES = [
+        ('pending',    'En attente'),
+        ('extracting', 'Extraction'),
+        ('chunking',   'Découpage'),
+        ('uploading',  'Indexation'),
+        ('indexed',    'Indexé'),
+        ('failed',     'Échec'),
+    ]
+
     user = models.ForeignKey(
         get_user_model(), 
         on_delete=models.SET_NULL, 
@@ -70,6 +80,11 @@ class Publication(models.Model):
     summary = models.TextField(null=True, blank=True)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
+    indexing_status = models.CharField(
+        max_length=20,
+        choices=INDEXING_STATUS_CHOICES,
+        default='pending',
+    )
 
     class Meta:
         ordering = ['-updated', '-created']
