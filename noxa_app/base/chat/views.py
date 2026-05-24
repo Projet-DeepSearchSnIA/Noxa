@@ -3,6 +3,7 @@ Views pour l'application Chat - Interface Chatbot RAG
 """
 import json
 import os
+import threading
 import uuid
 import logging
 import traceback
@@ -263,59 +264,58 @@ def send_message(request, conversation_id):
                     except Exception as e:
                         logger.error(f"Error saving to space: {e}")
             
-            # FAST TRACK: Process PDF immediately for RAG context
+            # Indexation PDF en arrière-plan
             if f.name.lower().endswith('.pdf'):
                 try:
-                    logger.info(f"⚡ FAST TRACK: Processing {f.name} for immediate context...")
-                    # Save temp file for processing using the saved attachment file
-                    import os
                     from django.conf import settings
-                    
+
                     temp_dir = os.path.join(settings.MEDIA_ROOT, 'temp_uploads')
                     os.makedirs(temp_dir, exist_ok=True)
                     temp_path = os.path.join(temp_dir, f.name)
-                    
-                    temp_path = os.path.join(temp_dir, f.name)
-                    
-                    # Use f directly after seeking back to start!
-                    # This is MUCH safer than trying to stream back from Cloudinary
+
                     try:
                         f.seek(0)
                         with open(temp_path, 'wb+') as destination:
                             for chunk in f.chunks():
                                 destination.write(chunk)
                     except Exception as e:
-                        logger.error(f"❌ Error writing temp file from f: {e}")
-                        # Fallback to attachment.file if f fails for some reason
+                        logger.error(f"❌ Error writing temp file: {e}")
                         attachment.file.open('rb')
                         with open(temp_path, 'wb+') as destination:
                             for chunk in attachment.file.chunks():
                                 destination.write(chunk)
                         attachment.file.close()
-                    
-                    # Process sync
-                    proc_service = get_document_processing_service()
-                    # Add user_id metadata so we can filter/track if needed (future proofing)
-                    metadata = {
-                        "user_id": request.user.id, 
-                        "source": "chat_upload",
-                        "attachment_id": attachment.id
-                    }
-                    proc_service.process_pdf(
-                        temp_path, 
-                        metadata=metadata,
-                        upload_to_pinecone=True,
-                        user_id=request.user.id,
-                        is_public=save_to_space
-                    )
-                    
-                    # Clean up temp file
-                    if os.path.exists(temp_path):
-                        os.remove(temp_path)
-                        
+
+                    uid = request.user.id
+                    att_id = attachment.id
+
+                    def index_chat_pdf(path, user_id, attachment_id, is_pub):
+                        try:
+                            svc = get_document_processing_service()
+                            svc.process_pdf(
+                                path,
+                                metadata={"user_id": user_id, "source": "chat_upload", "attachment_id": attachment_id},
+                                upload_to_pinecone=True,
+                                user_id=user_id,
+                                is_public=is_pub
+                            )
+                        except Exception as exc:
+                            logger.error("erreur indexation PDF chat: %s", exc)
+                        finally:
+                            try:
+                                os.remove(path)
+                            except Exception:
+                                pass
+
+                    threading.Thread(
+                        target=index_chat_pdf,
+                        args=(temp_path, uid, att_id, save_to_space),
+                        daemon=True
+                    ).start()
+
                     processed_context = True
-                    logger.info(f"✅ FAST TRACK: {f.name} processed and indexed!")
-                    
+                    logger.info("⚡ %s mis en file d'indexation Pinecone", f.name)
+
                 except Exception as e:
                     logger.error(f"❌ FAST TRACK Error processing {f.name}: {e}")
 
